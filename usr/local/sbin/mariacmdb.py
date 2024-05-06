@@ -145,7 +145,7 @@ class Mariacmdb:
     Create the Configuration Management Database with one table
     - CREATE DATABASE 'cmdb'
     - USE cmdb
-      CREATE TABLE 'servers'
+    - CREATE TABLE 'servers'
     """
     conn = self.connect_db()               # open connection
     cursor = conn.cursor()                 # open cursor
@@ -164,6 +164,7 @@ class Mariacmdb:
     try:   
       cursor.execute(self.create_table_cmd) # create database "cmdb"
       self.verbose_msg(f"initialize(): Created table 'servers'")
+      print("Created table 'servers'")
     except mariadb.Error as e:
       print(f"ERROR creating table 'servers': {e}")
       exit(1)
@@ -233,8 +234,9 @@ class Mariacmdb:
       conn.close()                         # cannot contiue
       return 1
     try: 
-      self.verbose_msg(f"replace_row(): replacing row with: {self.replace_row_cmd}")
       cursor.execute(self.replace_row_cmd, server_data)  
+      self.verbose_msg(f"replace_row(): replacing row with: {self.replace_row_cmd}")
+      print(f"Added or updated server {server}")
     except mariadb.Error as e:
       print(f"Error inserting row into table 'servers': {e}")
       conn.close()                         # close connection
@@ -271,6 +273,7 @@ class Mariacmdb:
         return 2 
       else:   
         self.verbose_msg(f"delete_row(): deleted server = {server} cursor.rowcount = {cursor.rowcount}")  
+        print(f"Removed server {server}")
     except mariadb.Error as e:
       print(f"Error deleting row in table 'servers': {e}")
       conn.close()                         # close connection
