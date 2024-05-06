@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# serverinfo - return hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level 
+#
+# It is distributed under the MIT license
+#
+if [ $# != 0 ]; then                       # if any arg passed => give help
+  echo "Name:  serverinfo - returns:"
+  echo "         hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level root FS %full"
+  echo "Usage: serverinfo"
+  exit 1
+fi
+
+# gather info
+hostName=`hostname`
+IPaddr=`ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}'`
+if [ ${#IPaddr} = 0 ]; then                # empty var
+  IPaddr=`curl -4 ifconfig.co`             # try a different way
+  if [ ${#IPaddr} = 0 ]; then
+    IPaddr="unknown"
+  fi
+fi
+numCPUs=`grep ^processor /proc/cpuinfo | wc -l`
+memKB=`cat /proc/meminfo | head -1 | awk '{print $2}'`
+cmd="echo \"scale=1; $memKB/1048576\" | bc" # KB to GB
+memGB=`eval $cmd`                           # do the math
+memGB=`printf "%.0f" $memGB`                # round to nearest int 
+arch=`arch`                                 # hardware platform
+os=`uname -s`                               # kernel name
+distro=`head -1 /etc/os-release | sed -e 's/PRETTY_NAME=//g' -e 's/"//g'`
+if [ ${#distro} = 0 ]; then                 # empty var
+  distro="unknown"
+fi 
+kernel=`uname -r -v`                        # kernel release and version"
+rootfsFull=`df -h / | tail -1 | awk '{print $5}' | sed 's/%//g'`
+echo "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$os,$distro,$kernel,$rootfsFull" # return CSV data
