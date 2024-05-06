@@ -4,8 +4,8 @@ A simple Configuration Management Database (CMDB) that uses mariadb to store the
 # Overview
 It has the following files:
 - mariacmdb.py&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
-- restapi.py&nbsp;&nbsp;&nbsp;&nbsp; RESTful API that works through a Web server
-- serverinfo&nbsp;&nbsp;&nbsp;&nbsp; A small bash script that returns data from managed servers
+- restapi.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API that works through a Web server
+- serverinfo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A small bash script that returns data from managed servers
 
 Key-based authentication, or *Passwordless* access is needed from the mariacmdb server to all systems that will be managed.
 
@@ -15,27 +15,50 @@ Following is a block diagram.
 ![](mariacmdb.jpg)
 
 # Installation
-TODO - finish
+To install MariaDB, perform the following steps:
 
-To install MariaDB:
+- Install mariadb, and the Python connector.
 ```
 sudo apt update
 sudo apt install mariadb-server libmariadb3 libmariadb-dev
 pip3 install mariadb
 pip install mysqlx-connector-python
 ```
-Answer many security questions:
+
+- Answer many security questions:
 ```
 sudo mysql_secure_installation
-... answer many questions ...
-  MariaDB root password: pi
+```
+    Remember the MariaDB root password
+
+- Copy this repository to your home directory.
+
+```
+cd
+git clone https://github.com/mike99mac/mariacmdb
 ```
 
+- Copy the line command to a directory in your ``PATH`` and the RESTful API command to a CGI directory of your Web server. 
+In this example, Apache set up ``/srv/www/maraicmdb/`` as a CGI directory. 
+
+```
+cp ~/mariacmdb/usr/local/sbin/mariacmdb /usr/local/sbin
+cp ~/mariacmdb/srv/www/restapi.py /srv/www/mariacmdb
+```
+
+- Copy the ``serverinfo`` bash script to your home directory.  
+If you pass the ``-c`` flag to ``mariacmdb.py``, it will expect the script to be there and will *push* it to the managed server before running it.
+
+```
+cp ~/mariacmdb/usr/local/sbin/serverinfo ~
+```
+
+
 # Usage
-Using mariacmdb was designed to be very easy to use.
+This mariacmdb solution was designed to be very easy to use.
 
 ## Line command
-Following is the help output for the line command:
+Following is the help output for ``mariacmdb.py``:
 
 ```
 $ mariacmdb.py -h
