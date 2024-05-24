@@ -50,7 +50,7 @@ cp ~/mariacmdb/srv/www/restapi.py /srv/www/mariacmdb
 ```
 
 - Copy the ``serverinfo`` bash script to your home directory.  
-If you pass the ``-c`` flag to ``mariacmdb.py``, it will expect the script to be there and will *push* it to the managed server before running it.
+If you use the ``-c`` flag on a ``mariacmdb.py add``, it will expect the script to be there and will *push* it to the managed server before running it.
 
 ```
 cp ~/mariacmdb/usr/local/sbin/serverinfo ~
@@ -112,8 +112,12 @@ options:
   --pattern PATTERN  pattern for query all columns
   --server SERVER    server to add or remove
 ```
+The host_name column must be unique. 
+So if an 'add' operation is request for a record that is already in the table, ``SQL REPLACE`` is called, rather than ``INSERT``.
+If any of the attributes have changed, the new values will be updated.
 
-Following is an example of initializing the database, adding four servers and showing a query:
+
+Following is an example of initializing the database, describing it, adding four servers and showing a query:
 
 ```
 mariacmdb.py initialize
