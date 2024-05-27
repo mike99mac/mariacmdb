@@ -20,19 +20,19 @@ class MariacmdbRestAPI():
     print("Content-Type: text/html")       # print MIME type
     print()                                # required empty line
 
-  # def print_env(self):
-  #   """
-  #   Show all environment variables with the 'env' command
-  #   """
-  #   proc = subprocess.run("env", shell=True, capture_output=True, text=True)
-  #   rc = proc.returncode
-  #   env_vars = []
-  #   env_vars = proc.stdout
-  #   print("<pre>")
-  #   for line in env_vars.split("\n"):
-  #     print(str(line))
-  #   print("</pre>")
-  #   print("")
+  def print_env(self):
+    """
+    Show all environment variables with the 'env' command
+    """
+    proc = subprocess.run("env", shell=True, capture_output=True, text=True)
+    rc = proc.returncode
+    env_vars = []
+    env_vars = proc.stdout
+    print("<pre>")
+    for line in env_vars.split("\n"):
+      print(str(line))
+    print("</pre>")
+    print("")
 
   def run_sql_cmd(self, cmd: str) -> str:
     """
@@ -102,42 +102,42 @@ class MariacmdbRestAPI():
     request_words = request_uri.split("/")
     num_words = len(request_words)
     self.log.debug(f"process_request_uri(): num_words = {num_words}")
-    if num_words == 1:                       # no operation   
+    if num_words == 1:                     # no operation   
       print("<html><head>")
       print("</head><body>")
       print("<h1>Contents of mariacmdb</h1>")
       sql_cmd = "SELECT * FROM servers"
     else: 
       operation = request_words[1].strip()
-      self.log.debug(f"process_request_uri() opearation = '{operation}'")
-      if operation == "ping":                # ping servers
+      self.log.debug(f"process_request_uri() operation = '{operation}'")
+      if operation == "ping":              # ping servers
         search_criteria = ""
         if num_words == 3:
           search_criteria = request_words[2]
         ret_str = self.ping_servers(search_criteria)
         print(ret_str)
-      else:                                  # SQL command
+      else:                                # SQL command
         match operation:
           case "count":
-            if num_words == 3:               # search criteria included
-              sql_cmd = f"SELECT COUNT(host_name) FROM servers WHERE {request_words[2]}"
+            if num_words == 4:             # search criteria included
+              sql_cmd = f"SELECT COUNT(host_name) FROM servers WHERE {request_words[2]} = \"{request_words[3]}\""
             else:
               sql_cmd = f"SELECT COUNT(host_name) FROM servers" 
           case "hostname":
-            if num_words == 3:               # search criteria included
-              sql_cmd = f"SELECT host_name FROM servers WHERE {request_words[2]}"
+            if num_words == 4:             # search criteria included
+              sql_cmd = f"SELECT host_name FROM servers WHERE {request_words[2]} = \"{request_words[3]}\""
             else:
               sql_cmd = f"SELECT host_name FROM servers"
           case "query":
-            if num_words == 3:               # search criteria included
-              sql_cmd = f"SELECT * FROM servers WHERE {request_words[2]}"
+            if num_words == 4:             # search criteria included
+              sql_cmd = f"SELECT * FROM servers WHERE {request_words[2]} = \"{request_words[3]}\""
             else:
               sql_cmd = f"SELECT * FROM servers"
           case _:  
             print(f"unexpected: operation = {operation}")
             exit(1)
-        sql_out = self.run_sql_cmd(sql_cmd)       # return output of SQL command
-        print(sql_out)
+        sql_out = self.run_sql_cmd(sql_cmd) # return output of SQL command
+        print('{"num_servers": '+sql_out+'}')
 
 # main
 mariacmdbRestAPI = MariacmdbRestAPI()      # create a singleton
