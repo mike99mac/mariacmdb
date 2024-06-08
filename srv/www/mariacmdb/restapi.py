@@ -12,7 +12,7 @@ import subprocess
 
 class MariacmdbRestAPI():
   def __init__(self):
-    logging.basicConfig(filename='/var/log/apache2/restapi.log',
+    logging.basicConfig(filename='/home/pi/restapi.log',
                         format='%(asctime)s %(levelname)s %(message)s',
                         level=logging.DEBUG)
     self.log = logging.getLogger(__name__)
@@ -76,9 +76,9 @@ class MariacmdbRestAPI():
     sql_out = self.run_sql_cmd(sql_cmd).split(" ") # list of server host names
     self.log.info(f"ping_servers(): sql_out = {sql_out}")
     num_servers = 0
-    pinged_servers = 0
+    up_servers = 0
     if sql_out == "":                      # no records found
-      pinged_servers = 0
+      up_servers = 0
       num_servers = 0
     else:
       for next_server in sql_out:
@@ -86,8 +86,9 @@ class MariacmdbRestAPI():
         num_servers += 1 
         proc = subprocess.run(f"ping -c1 -w1 {next_server}", shell=True, capture_output=True, text=True)     
         if proc.returncode == 0:                            # server pings
-          pinged_servers += 1
-    return f"{pinged_servers} {num_servers}"
+          up_servers += 1
+    self.log.debug(f"ping_servers(): up_servers: {up_servers} num_servers: {num_servers}")
+    print('{"up_servers": '+str(up_servers)+', "num_servers": '+str(num_servers)+'}') # return JSON
 
   def process_request_uri(self):
     """
@@ -114,8 +115,7 @@ class MariacmdbRestAPI():
         search_criteria = ""
         if num_words == 3:
           search_criteria = request_words[2]
-        ret_str = self.ping_servers(search_criteria)
-        print(ret_str)
+        self.ping_servers(search_criteria)
       else:                                # SQL command
         match operation:
           case "count":

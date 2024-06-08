@@ -1,11 +1,7 @@
 #!/usr/bin/python3
 """
 mariacmdb is a simple Configuration Management Database (CMDB) based on the mariadb relational database.
-It consists:
-- A database: 'cmdb'
-- A table:    'servers
-
-The table has these columns:
+It consists of a database named 'cmdb' with a table named 'servers' with these columns:
 - host_name  Short host name
 - ip_addr    Primary IP address
 - cpus       Number of CPUs
@@ -15,12 +11,15 @@ The table has these columns:
 - os_ver     OS version
 - kernel     Kernel version
 - rootfs     Root file system % full
+- created_at Timestamp
 
 It supports the following commands:
 - initialize        Creates the table 'servers' in database 'cmdb'
 - add <SERVER>      If SERVER already exists, record is updated
+- describe          Show the format of the 'servers' database
 - query <PATTERN>   If no PATTERN is supllied, return all rows
-- remove <SERVER>
+- remove <SERVER>   Remove row for specified server
+- update            Refresh entire database
 
 Return codes:
 0 - Success
@@ -34,6 +33,7 @@ Examples:
 - mariacmdb.py -v query
 """
 import argparse
+import logging
 import mariadb
 import os
 import subprocess
@@ -41,17 +41,30 @@ import sys
 
 class Mariacmdb:
   def __init__(self):
-    self.script_dir = "/home/pi/"          # directory where script 'serverinfo' resides
+    # create a logger that writes both to a file and stdout
+    logging.basicConfig(filename='/home/pi/mariacmdb.log',
+                        format='%(asctime)s %(levelname)s %(message)s',
+                        level=logging.INFO)
+    self.console = logging.StreamHandler()          # set up logging to console
+    self.console.setLevel(logging.INFO)
+    self.formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')  # set a format which is simpler for console use
+    self.console.setFormatter(self.formatter)
+    logging.getLogger('').addHandler(self.console) # add the handler to the root logger
+    self.log = logging.getLogger(__name__)
+
+    self.script_dir = "/home/pi"           # directory where script 'serverinfo' resides
     self.parser = argparse.ArgumentParser(description = "mariacmdb - A simple Configuration Management Database")
     self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     self.parser.add_argument("-c", "--copyscript", help="copy script 'serverinfo' to target server before add", action="store_true")
     self.parser.add_argument("--column", help="column name to search", action="append")
     self.parser.add_argument("--value", help="value to search for in previous column", action="append")
-    self.parser.add_argument("command", help="Can be 'add', 'describe', 'initialize', 'query', or 'remove'")
+    self.parser.add_argument("command", help="Can be 'add', 'describe', 'initialize', 'query', 'remove' or 'update'")
     self.parser.add_argument("--pattern", help="pattern for query all columns", action="append")
     self.parser.add_argument("--server", help="server to add or remove", action="append")
     self.args = self.parser.parse_args()
-    self.verbose_msg(f"__init__(): self.args = {str(self.args)}")
+    self.conn = None                       # mariadb connection
+    self.cursor = None                     # mariadb cursor
+    self.log.debug(f"__init__(): self.args = {str(self.args)}")
     self.create_db_cmd = "CREATE DATABASE cmdb;"
     self.describe_cmd = "DESC servers;"
     self.delete_cmd = "DELETE FROM servers WHERE host_name = pattern;"
@@ -86,60 +99,66 @@ class Mariacmdb:
         OR rootfs LIKE ptrn;
         """
     self.select_all_cmd = "SELECT * FROM servers"
+    self.select_host_names_cmd = "SELECT host_name FROM servers"
     self.use_cmd = "USE cmdb" 
-
-  def verbose_msg(self, msg):
-    """
-    Print message when in verbose mode
-    """
-    if self.args.verbose:
-      print(msg)
 
   def connect_db(self):   
     """
     Connect to mariadb running on this server
     """   
     return mariadb.connect(user="root", password="pi", host="127.0.0.1", database="mysql")   
+
+  def connect_to_cmdb(self):   
+    """
+    Connect to mariadb and use datase cmdb 
+    """  
+    self.conn = self.connect_db()          # open connection
+    self.cursor = self.conn.cursor()       # open cursor
+    try:   
+      self.cursor.execute(self.use_cmd)    # use cmdb 
+      self.log.debug("connect_to_cmdb(): changed database to 'cmdb'")
+    except mariadb.Error as e:
+      self.log.error(f"connect_to_cmdb(): ERROR changing database to 'cmdb': {e}")
+      self.conn.close()                    # cannot contiue
+      return -1 
     
   def query_cmdb(self):
     """
     Search CMDB for specified pattern 
     """
-    pattern = self.args.pattern
-    self.verbose_msg(f"query_cmdb(): self.args.pattern = {self.args.pattern}")
+    pattern = str(self.args.pattern).replace("'", "").replace("[", "").replace("]", "")
+    self.log.debug(f"query_cmdb(): self.args.pattern = {self.args.pattern}")
     cmd = ""
     if self.args.column:
-      self.verbose_msg(f"query_cmdb(): self.args.column = {self.args.column} self.args.value = {self.args.value}")
-      print("TODO: search by column")
+      self.log.debug(f"query_cmdb(): self.args.column = {self.args.column} self.args.value = {self.args.value}")
     if self.args.pattern == None and self.args.value == None:  # no search pattern
-      self.verbose_msg("query_cmdb(): No search PATTERN - returning all records")
+      self.log.debug("query_cmdb(): No search PATTERN - returning all records")
       cmd = self.select_all_cmd            # return all rows
     else:  
       cmd = self.select_cmd.replace("ptrn", "'%"+pattern+"%'") # put search pattern in query
-    self.verbose_msg(f"query_cmdb(): searching for '{pattern}' with command: {cmd}")
-    conn = self.connect_db()               # open connection
-    cursor = conn.cursor()                 # open cursor
-    try:   
-      cursor.execute(self.use_cmd)         # use cmdb 
-      self.verbose_msg("query_cmdb(): changed database to 'cmdb'")
-    except mariadb.Error as e:
-      print(f"ERROR changing database to 'cmdb': {e}")
-      conn.close()                         # cannot contiue
-      return 1
+    self.log.debug(f"query_cmdb(): searching for '{pattern}' with command: {cmd}")
+    if self.connect_to_cmdb() == -1: 
+      self.log.error("query_cmdb(): connect_to_cmdb() failed")
+      return -1
     rows = ""  
     try:   
-      cursor.execute(cmd)                  # query the cmdb
-      rows = cursor.fetchall()
+      self.cursor.execute(cmd)             # query the cmdb
+      rows = self.cursor.fetchall()
       if rows == []:
-        self.verbose_msg("query_cmdb(): No records found")
+        self.log.debug("query_cmdb(): No records found")
         return 2                           # no records found
       else:                                # print rows
         for i in rows:
           print(*i, sep=',') 
     except mariadb.Error as e:
-      print(f"WARNING - query_cmdb(): Exception searching database: {e}")
+      self.log.warning(f"WARNING - query_cmdb(): Exception searching database: {e}")
       return 1
-        
+
+  def commit_changes(self):    
+    self.conn.commit()                     # commit changes
+    self.cursor.close()                    # close cursor
+    self.conn.close()                      # close connection
+
   def initialize(self):  
     """
     Create the Configuration Management Database with one table
@@ -147,50 +166,48 @@ class Mariacmdb:
     - USE cmdb
       CREATE TABLE 'servers'
     """
-    conn = self.connect_db()               # open connection
-    cursor = conn.cursor()                 # open cursor
+    self.conn = self.connect_db()          # open connection
+    self.cursor = self.conn.cursor()       # open cursor
     try:   
-      cursor.execute(self.create_db_cmd)   # create database "cmdb"
-      conn.commit()                        # commit changes
+      self.cursor.execute(self.create_db_cmd) # create database "cmdb"
+      self.conn.commit()                   # commit changes
     except mariadb.Error as e:
-      print(f"WARNING - Exception creating database: {e}")
+      self.log.warning(f"initialize(): Exception creating database: {e}")
     try:   
-      cursor.execute(self.use_cmd)         # use cmdb
-      self.verbose_msg("initialize(): changed to database 'cmdb'")
+      self.cursor.execute(self.use_cmd)    # use cmdb
+      self.log.debug("initialize(): changed to database 'cmdb'")
     except mariadb.Error as e:
-      print(f"ERROR changing database to 'cmdb': {e}")
-      conn.close()                         # cannot continue
+      self.log.error(f"initialize(): changing database to 'cmdb': {e}")
+      self.conn.close()                    # cannot continue
       exit(1)
     try:   
-      cursor.execute(self.create_table_cmd) # create database "cmdb"
-      self.verbose_msg(f"initialize(): Created table 'servers'")
+      self.cursor.execute(self.create_table_cmd) # create database "cmdb"
+      self.log.debug(f"initialize(): Created table 'servers'")
     except mariadb.Error as e:
-      print(f"ERROR creating table 'servers': {e}")
+      self.log.error(f"initialize(): ERROR creating table 'servers': {e}")
       exit(1)
-    conn.commit()                          # commit changes
-    cursor.close()                         # close cursor
-    conn.close()                           # close connection
+    self.commit_changes()  
   
   def ping_server(self):
     """
     Ping the server passed in with the --server option
     """
     if self.args.server == None:           # no server name specified
-      print(f"ERROR: Option '--server SERVER' must be specified with command '{self.args.command}'")
+      self.log.error(f"ping_server(): Option '--server SERVER' must be specified with command '{self.args.command}'")
       return 1
     server = str(self.args.server[0])  
-    self.verbose_msg(f"ping_server(): server = {server}")
+    self.log.debug(f"ping_server(): server = {server}")
     ping_cmd = f"ping -c1 -W 0.5 {server}" # send 1 packet, timeout after 500ms
     proc = subprocess.run(ping_cmd, shell=True, capture_output=True, text=True)
     rc = proc.returncode
-    self.verbose_msg(f"ping_server(): command {ping_cmd} returned {rc}")
+    self.log.debug(f"ping_server(): command {ping_cmd} returned {rc}")
     if rc != 0:                          # just give warning
-      print(f"ERROR: cannot ping server: {server}")
+      self.log.error(f"ping_server(): cannot ping server: {server}")
       return 1
     else:
       return 0 
 
-  def find_server(self):
+  def find_server(self, server):
     """
     Get data from a server
     - if requested, copy the script 'serverinfo' to the target server's script directory
@@ -198,22 +215,19 @@ class Mariacmdb:
     - sample output:
     model800,192.168.12.176,4,4,aarch64,Linux,Ubuntu 22.04.4 LTS,5.15.0-1053-raspi #56-Ubuntu SMP PREEMPT Mon Apr 15 18:50:10 UTC 2024
     """
-    server = str(self.args.server[0]) 
+    self.log.debug(f"find_server(): server = {server}")
     if self.args.copyscript:               # copy script first
       scp_cmd = f"scp {self.script_dir}/serverinfo {server}:{self.script_dir}" 
-      proc = subprocess.run(scp_cmd, shell=True, capture_output=True, text=True)
-      rc = proc.returncode
-      self.verbose_msg(f"find_server(): command {scp_cmd} returned {rc}")
-      if rc != 0:                          # just give warning
-        print(f"WARNING: command {scp_cmd} returned {rc}")
-
-    # run script 'serverinfo' and get output
-    ssh_cmd = f"ssh {server} {self.script_dir}/serverinfo"
+      proc = subprocess.run(scp_cmd, shell=True, capture_output=True, text=True) 
+      if proc.returncode != 0:             # just give warning
+        self.log.warning(f"find_server(): command {scp_cmd} returned {proc.returncode}")
+      else:
+        self.log.debug(f"find_server(): command {scp_cmd} returned {proc.returncode}")
+    ssh_cmd = f"ssh {server} {self.script_dir}/serverinfo"  # run script 'serverinfo' and get output
     proc = subprocess.run(ssh_cmd, shell=True, capture_output=True, text=True)
-    rc = proc.returncode
     server_data = []
     server_data = proc.stdout.split(",")
-    self.verbose_msg(f"find_server(): command {ssh_cmd} rc: {rc} stdout: {server_data}")
+    self.log.debug(f"find_server(): command {ssh_cmd} returncode: {proc.returncode} stdout: {server_data}")
     return server_data
 
   def replace_row(self, server_data = []): 
@@ -221,79 +235,56 @@ class Mariacmdb:
     USE cmdb
     INSERT a row into table 'servers' or REPLACE it if host_name is a duplicate
     """
-    server = str(self.args.server[0]) 
-    self.verbose_msg(f"replace_row(): self.args.server = {self.args.server}")
-    conn = self.connect_db()               # open connection
-    cursor = conn.cursor()                 # open cursor
-    try:   
-      cursor.execute(self.use_cmd)         # use cmdb
-      self.verbose_msg("replace_row(): changed to database 'cmdb'")
-    except mariadb.Error as e:
-      print(f"Error changing database to 'cmdb': {e}")
-      conn.close()                         # cannot contiue
-      return 1
+    server = server_data[0] 
+    self.log.debug(f"replace_row(): server_data = {server_data} server = {server}")
+    self.connect_to_cmdb()
     try: 
-      self.verbose_msg(f"replace_row(): replacing row with: {self.replace_row_cmd}")
-      cursor.execute(self.replace_row_cmd, server_data)  
+      self.log.debug(f"replace_row(): replacing row with: {self.replace_row_cmd}")
+      self.cursor.execute(self.replace_row_cmd, server_data)  
     except mariadb.Error as e:
-      print(f"Error inserting row into table 'servers': {e}")
-      conn.close()                         # close connection
-      return        
-    conn.commit()                          # commit changes
-    cursor.close()                         # close cursor
-    conn.close()                           # close connection
+      self.log.error(f"replace_row() inserting row into table 'servers': {e}")
+      self.conn.close()                         # close connection
+      return 
+    self.commit_changes() 
+    self.log.info(f"replace_row(): replaced row for server {server}")
 
   def delete_row(self):
     """
     Delete a row with a "host_name" of the specified server 
     """
-    self.verbose_msg(f"delete_row(): self.args.server = {self.args.server}")
+    self.log.debug(f"delete_row(): self.args.server = {self.args.server}")
     if self.args.server == None:           # no server name specified
-      print("ERROR: --server SERVER must be specified with delete")
+      self.log.error("delete_row(): --server SERVER must be specified with delete")
       return 1
-    conn = self.connect_db()               # open connection
-    cursor = conn.cursor()                 # open cursor
-    try:   
-      cursor.execute(self.use_cmd)         # use cmdb
-      self.verbose_msg("delete_row(): changed to database 'cmdb'")
-    except mariadb.Error as e:
-      print(f"Error changing database to 'cmdb': {e}")
-      conn.close()                         # cannot contiue
-      return 1
+    if self.connect_to_cmdb() == -1:  
+      self.log.debug("delete_row(): connect_to_cmdb() failed")
+      return -1
     server = str(self.args.server[0])  
     cmd = self.delete_cmd.replace("pattern", "'"+server+"'") # add target server in single quotes
-    self.verbose_msg(f"delete_row(): cmd = {cmd}")  
+    self.log.debug(f"delete_row(): cmd = {cmd}")  
     try: 
-      cursor.execute(cmd)  
-      if cursor.rowcount == 0:             # no matching server
-        self.verbose_msg(f"delete_row(): cursor.rowcount = {cursor.rowcount}")  
-        print(f"ERROR: did not find server {server} in CMDB")
+      self.cursor.execute(cmd)  
+      if self.cursor.rowcount == 0:        # no matching server
+        self.log.debug(f"delete_row(): cursor.rowcount = {cursor.rowcount}")  
+        self.log.error(f"delete_row(): did not find server {server} in CMDB")
         return 2 
       else:   
-        self.verbose_msg(f"delete_row(): deleted server = {server} cursor.rowcount = {cursor.rowcount}")  
+        self.log.debug(f"delete_row(): deleted server = {server} cursor.rowcount = {cursor.rowcount}")  
     except mariadb.Error as e:
-      print(f"Error deleting row in table 'servers': {e}")
-      conn.close()                         # close connection
-      return 1       
-    conn.commit()                          # commit changes
-    cursor.close()                         # close cursor
-    conn.close()                           # close connection
+      self.log.error(f"delete_row(): ERROR deleting row in table 'servers': {e}")
+      self.conn.close()                         # close connection
+      return 1    
+    self.commit_changes()           
   
   def describe_table(self):
     """
     Describe the 'server' table
     """
-    conn = self.connect_db()               # open connection
-    cursor = conn.cursor()                 # open cursor
+    if self.connect_to_cmdb() == -1:
+      self.log.error("describe_table(): connect_to_cmdb() failed")
+      return -1
     try:   
-      cursor.execute(self.use_cmd)         # use cmdb
-      self.verbose_msg("describe_table(): changed database to 'cmdb'")
-    except mariadb.Error as e:
-      print(f"ERROR changing database to 'cmdb': {e}")
-      conn.close()                         # cannot contiue
-      return 1
-    try:   
-      cursor.execute(self.describe_cmd)    # describe the table
+      self.cursor.execute(self.describe_cmd)    # describe the table
       rows = cursor.fetchall()
       print("Table servers:")
       print("Field,Type,Null,Key,Default,Extra")
@@ -301,37 +292,71 @@ class Mariacmdb:
       for i in rows:
         print(*i, sep=',') 
     except mariadb.Error as e:
-      print(f"WARNING - describe_table(): Exception searching database: {e}")
-      conn.close()                         # cannot contiue
+      self.log.warning(f"describe_table(): Exception searching database: {e}")
+      self.conn.close()                    # cannot contiue
       return 1
-    conn.close()                           # close connection  
+    self.conn.close()                      # close connection  
+
+  def update_cmdb(self):
+    """
+    Update all rows in 'server' table
+    """
+    if self.connect_to_cmdb() == -1:
+      self.log.debug("update_cmdb(): connect_to_cmdb() failed")
+      return -1
+    try:   
+      self.cursor.execute(self.select_host_names_cmd) # get all hostnames in table
+      servers = self.cursor.fetchall()
+      self.log.debug(f"update_cmdb(): servers = {servers}")
+      for next_server in servers:
+        next_server = str(next_server).strip("'").strip("(").strip(")").strip(",").strip("'")
+        self.log.debug(f"update_cmdb(): next_server = {next_server}")
+        server_data = self.find_server(next_server)
+        self.log.debug(f"update_cmdb(): server_data = {server_data}")
+        if server_data == ['']:            # did not get server data
+          self.log.warning(f"update_cmdb(): did not get server_data for {next_server} - skipping")
+          continue                         # iterate loop
+        self.replace_row(server_data)
+      self.log.info("update_cmdb() successfully updated table 'servers'")  
+    except mariadb.Error as e:
+      self.log.warning(f"update_cmdb(): Exception updating database: {e}")
+      self.conn.close()                    # cannot contiue
+      return 1
 
   def run_command(self):
     """
     Run the command passed in
     """
     rc = 0                                 # assume success
-    self.verbose_msg(f"run_command(): command = {self.args.command}")
+    if self.args.verbose:                  # set log level to DEBUG for log file and stdout
+      self.log.setLevel(logging.DEBUG)
+      self.console.setLevel(logging.DEBUG)
+    self.log.debug(f"run_command(): command = {self.args.command}")
     match self.args.command:
       case 'initialize':
         rc = self.initialize()             # ignore 2nd word if any
       case 'add':  
+        if self.args.server == None:       # no server name specified
+          self.log.error("run_command(): Option '--server SERVER' must be specified with command 'add'")
+          return 1
         rc = self.ping_server()
         if rc == 0:                        # server pings
-          self.verbose_msg(f"run_command(): server pings, calling find_server")
-          server_data = self.find_server()
+          self.log.debug(f"run_command(): server pings, calling find_server")
+          server_data = self.find_server(self.args.server[0])
           rc = self.replace_row(server_data)
+      case "describe":
+        rc = self.describe_table() 
       case 'remove':
         if self.args.server == None:       # no server name specified
-          print("ERROR: Option '--server SERVER' must be specified with command 'remove'")
+          self.log.error("run_command(): Option '--server SERVER' must be specified with command 'remove'")
           return 1
         rc = self.delete_row()  
       case "query":
         rc = self.query_cmdb()
-      case "describe":
-        rc = self.describe_table()
+      case "update":
+        rc = self.update_cmdb()
       case _:
-        print(f"ERROR: unrecognized command {self.args.command}")  
+        self.log.error(f"run_command(): unrecognized command {self.args.command}")  
         rc = 1
     exit(rc)    
 
