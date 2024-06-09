@@ -18,7 +18,7 @@ Following is a block diagram.
 # Installation
 To install MariaDB, perform the following steps:
 
-- Install mariadb, and the Python connector.
+- Install mariadb, and the Python connector:
 ```
 sudo apt update
 sudo apt install mariadb-server libmariadb3 libmariadb-dev
@@ -26,14 +26,14 @@ pip3 install mariadb
 pip install mysqlx-connector-python
 ```
 
-- Answer many security questions.
+- Issue the following command and answer the many security questions:
 ```
 sudo mysql_secure_installation
 ```
 
-Remember the MariaDB root password
+Remember the MariaDB root password!
 
-- Copy this repository to your home directory.
+- Clone the ``mariacmdb`` repo to your home directory:
 
 
 ```
@@ -53,7 +53,7 @@ cp ~/mariacmdb/srv/www/restapi.py /srv/www/mariacmdb
 If you use the ``-c`` flag on a ``mariacmdb.py add``, it will expect the script to be there and will *push* it to the managed server before running it.
 
 ```
-cp ~/mariacmdb/usr/local/sbin/serverinfo ~
+cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
 ```
 
 Installation and configuration of Apache is beyond the scope of this document, however, following is the Apache configuration file that is being used:
@@ -92,34 +92,29 @@ Group pi
 This mariacmdb solution was designed to be very easy to use.
 
 ## Line command
-Following is the help output for ``mariacmdb.py``:
+Following is the help output for the line command ``mariacmdb.py``:
 
 ```
 $ mariacmdb.py -h
-usage: mariacmdb.py [-h] [-v] [-c] [--column COLUMN] [--value VALUE] [--pattern PATTERN] [--server SERVER] command
+usage: mariacmdb.py [-h] [-v] [-C] [-c COLUMN] [-p PATTERN] [-s SERVER] subcommand
 
 mariacmdb - A simple Configuration Management Database
 
 positional arguments:
-  command            Can be 'add', 'describe', 'initialize', 'query', or 'remove'
+  subcommand            Can be 'add', 'describe', 'initialize', 'query', 'remove' or 'update'
 
 options:
-  -h, --help         show this help message and exit
-  -v, --verbose      increase output verbosity
-  -c, --copyscript   copy script 'serverinfo' to target server before add
-  --column COLUMN    column name to search
-  --value VALUE      value to search for in previous column
-  --pattern PATTERN  pattern for query all columns
-  --server SERVER    server to add or remove
+  -h, --help            show this help message and exit
+  -v, --verbose         increase output verbosity
+  -C, --copyscript      copy script 'serverinfo' to target server before add
+  -c COLUMN, --column COLUMN
+                        column name to search
+  -p PATTERN, --pattern PATTERN
+                        pattern to search for
+  -s SERVER, --server SERVER
+                        server to add or remove
 ```
-The host_name column must be unique. 
-So if an 'add' operation is request for a record that is already in the table, ``SQL REPLACE`` is called, rather than ``INSERT``.
-If any of the attributes have changed, the new values will be updated.
-
-
-Following is an example of initializing the database, describing it, adding four servers and showing a query:
-
-```
+Use the ``initialize`` 
 mariacmdb.py initialize
 Created database 'servers'
 
