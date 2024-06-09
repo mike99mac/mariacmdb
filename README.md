@@ -114,10 +114,14 @@ options:
   -s SERVER, --server SERVER
                         server to add or remove
 ```
-Use the ``initialize`` 
-mariacmdb.py initialize
-Created database 'servers'
+- Use the ``initialize`` subcommand to create 
 
+``` 
+$ mariacmdb.py initialize
+Created database 'servers'
+```
+
+- Use the ``describe`` subcommand to list the attributes of the ``servers`` table: 
 mariacmdb.py describe 
 Table servers:
 Field,Type,Null,Key,Default,Extra
