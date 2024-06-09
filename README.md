@@ -13,12 +13,13 @@ The ``mariacmdb.py`` command must be run by that user.
 Using mariadb, one database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
 
 Following is a block diagram.
-![](mariacmdb.jpg) mariacmdb block diagram
+![](mariacmdb.jpg) 
+mariacmdb block diagram
 
 # Installation
 To install MariaDB, perform the following steps:
 
-- Install mariadb, and the Python connector:
+- Install mariadb and co-requisite packages:
 ```
 sudo apt update
 sudo apt install mariadb-server libmariadb3 libmariadb-dev
@@ -33,15 +34,15 @@ sudo mysql_secure_installation
 
 Remember the MariaDB root password!
 
-- Clone the ``mariacmdb`` repo to your home directory:
+- Clone this repo to your home directory:
 
 ```
 cd
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
-- Copy the line command to a directory in your ``PATH`` and the RESTful API command to a CGI directory of your Web server. 
-In this example, Apache set up ``/srv/www/maraicmdb/`` as a CGI directory. 
+- Copy the line command to ``/usr/local/sbin`` and the RESTful API command to a CGI directory of your Web server. 
+In this example, Apache is configured with ``/srv/www/maraicmdb/`` as a CGI directory. 
 
 ```
 cp ~/mariacmdb/usr/local/sbin/mariacmdb /usr/local/sbin
@@ -49,13 +50,14 @@ cp ~/mariacmdb/srv/www/restapi.py /srv/www/mariacmdb
 ```
 
 - Copy the ``serverinfo`` bash script to your home directory.  
-If you use the ``-c`` flag on a ``mariacmdb.py add``, it will expect the script to be there and will *push* it to the managed server before running it.
+
+The ``-c`` flag on a ``mariacmdb.py add`` command will expect the script to be there and will *push* it to the managed server before running it.
 
 ```
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
 ```
 
-Installation and configuration of Apache is beyond the scope of this document, however, following is the Apache configuration file that is being used:
+Following is the Apache configuration file used in this document:
 
 ```
 #
@@ -89,6 +91,8 @@ Group pi
 
 # Usage
 This mariacmdb solution was designed to be very easy to use.
+
+The following sections describe the line command and the RESTful API.
 
 ## Line command
 Following is the help output for the line command ``mariacmdb.py``:
@@ -140,7 +144,9 @@ rootfs,int(11),YES,,None,
 created_at,timestamp,NO,,current_timestamp(),
 ```
 
-- Use the ``add`` subcommand to insert rows into the database.  The mariacmdb server must be able to **``ssh``** to all servers to be added to the database.  Following is an example of adding four:
+- Use the ``add`` subcommand to insert rows into the database.  
+
+The mariacmdb server must be able to **``ssh``** to all servers using key-based authentication.  Following is an example of adding four severs to be managed:
  
 ```
 mariacmdb.py add --server model800
@@ -156,7 +162,7 @@ mariacmdb.py add --server model2000
 Added or updated server model12000
 ```
 
-- Use the ``query`` subcommand show all rows in the table:
+- Use the ``query`` subcommand to show all rows in the table:
 
 ```
 mariacmdb.py query 
@@ -164,6 +170,17 @@ model1000,192.168.12.233,4,4,aarch64,Linux,Debian GNU/Linux 12 (bookworm),6.6.28
 model1500,192.168.12.239,4,4,aarch64,Linux,Ubuntu 22.04.4 LTS,5.15.0-1053-raspi #56-Ubuntu SMP PREEMPT Mon Apr 15 18:50:10 UTC 2024,24,2024-05-06 14:02:01
 model2000,192.168.12.163,4,8,aarch64,Linux,Debian GNU/Linux 12 (bookworm),6.6.28+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.6.28-1+rpt1 (2024-04-22),32,2024-05-06 14:02:06
 model800,192.168.12.176,4,4,aarch64,Linux,Ubuntu 22.04.4 LTS,5.15.0-1053-raspi #56-Ubuntu SMP PREEMPT Mon Apr 15 18:50:10 UTC 2024,23,2024-05-06 14:01:04
+```
+
+- Use the ``update`` subcommand to update all rows in the ``servers`` table.  There must be the ability to use key-based authentication to ``ssh`` to all managed servers. 
+
+```
+mariacmdb.py update 
+__main__    : INFO     replace_row(): replaced row for server model1000
+__main__    : INFO     replace_row(): replaced row for server model1500
+__main__    : INFO     replace_row(): replaced row for server model2000
+__main__    : INFO     replace_row(): replaced row for server model800
+__main__    : INFO     update_cmdb() successfully updated table 'servers'
 ```
  
 ## RESTful API

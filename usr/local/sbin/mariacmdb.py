@@ -55,12 +55,11 @@ class Mariacmdb:
     self.script_dir = "/home/pi"           # directory where script 'serverinfo' resides
     self.parser = argparse.ArgumentParser(description = "mariacmdb - A simple Configuration Management Database")
     self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-    self.parser.add_argument("-c", "--copyscript", help="copy script 'serverinfo' to target server before add", action="store_true")
-    self.parser.add_argument("--column", help="column name to search", action="append")
-    self.parser.add_argument("--value", help="value to search for in previous column", action="append")
-    self.parser.add_argument("command", help="Can be 'add', 'describe', 'initialize', 'query', 'remove' or 'update'")
-    self.parser.add_argument("--pattern", help="pattern for query all columns", action="append")
-    self.parser.add_argument("--server", help="server to add or remove", action="append")
+    self.parser.add_argument("-C", "--copyscript", help="copy script 'serverinfo' to target server before add", action="store_true")
+    self.parser.add_argument("-c", "--column", help="column name to search", action="append")
+    self.parser.add_argument("subcommand", help="Can be 'add', 'describe', 'initialize', 'query', 'remove' or 'update'")
+    self.parser.add_argument("-p", "--pattern", help="pattern to search for", action="append")
+    self.parser.add_argument("-s", "--server", help="server to add or remove", action="append")
     self.args = self.parser.parse_args()
     self.conn = None                       # mariadb connection
     self.cursor = None                     # mariadb cursor
@@ -129,9 +128,13 @@ class Mariacmdb:
     pattern = str(self.args.pattern).replace("'", "").replace("[", "").replace("]", "")
     self.log.debug(f"query_cmdb(): self.args.pattern = {self.args.pattern}")
     cmd = ""
-    if self.args.column:
-      self.log.debug(f"query_cmdb(): self.args.column = {self.args.column} self.args.value = {self.args.value}")
-    if self.args.pattern == None and self.args.value == None:  # no search pattern
+    if self.args.column:                   # search is based on one column
+      if self.args.pattern == None:        # no pattern to search on
+        self.log.error("query_cmdb(): if COLUMN is specified there must be a search PATTERN")
+        return 1
+      self.log.debug(f"query_cmdb(): TODO: search on args.column = {self.args.column} args.pattern = {self.args.pattern}")
+      return 2 # for now
+    if self.args.pattern == None:          # no search pattern
       self.log.debug("query_cmdb(): No search PATTERN - returning all records")
       cmd = self.select_all_cmd            # return all rows
     else:  
@@ -154,7 +157,10 @@ class Mariacmdb:
       self.log.warning(f"WARNING - query_cmdb(): Exception searching database: {e}")
       return 1
 
-  def commit_changes(self):    
+  def commit_changes(self):   
+    """
+    Commit all SQL changes then close cursor and connection
+    """ 
     self.conn.commit()                     # commit changes
     self.cursor.close()                    # close cursor
     self.conn.close()                      # close connection
@@ -331,13 +337,13 @@ class Mariacmdb:
     if self.args.verbose:                  # set log level to DEBUG for log file and stdout
       self.log.setLevel(logging.DEBUG)
       self.console.setLevel(logging.DEBUG)
-    self.log.debug(f"run_command(): command = {self.args.command}")
-    match self.args.command:
+    self.log.debug(f"run_command(): subcommand = {self.args.subcommand}")
+    match self.args.subcommand:
       case 'initialize':
         rc = self.initialize()             # ignore 2nd word if any
       case 'add':  
         if self.args.server == None:       # no server name specified
-          self.log.error("run_command(): Option '--server SERVER' must be specified with command 'add'")
+          self.log.error("run_command(): Option '--server SERVER' must be specified with subcommand 'add'")
           return 1
         rc = self.ping_server()
         if rc == 0:                        # server pings
@@ -348,7 +354,7 @@ class Mariacmdb:
         rc = self.describe_table() 
       case 'remove':
         if self.args.server == None:       # no server name specified
-          self.log.error("run_command(): Option '--server SERVER' must be specified with command 'remove'")
+          self.log.error("run_command(): Option '--server SERVER' must be specified with subcommand 'remove'")
           return 1
         rc = self.delete_row()  
       case "query":
@@ -356,7 +362,7 @@ class Mariacmdb:
       case "update":
         rc = self.update_cmdb()
       case _:
-        self.log.error(f"run_command(): unrecognized command {self.args.command}")  
+        self.log.error(f"run_command(): unrecognized subcommand {self.args.subcommand}")  
         rc = 1
     exit(rc)    
 
