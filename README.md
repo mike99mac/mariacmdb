@@ -35,7 +35,6 @@ Remember the MariaDB root password!
 
 - Clone the ``mariacmdb`` repo to your home directory:
 
-
 ```
 cd
 git clone https://github.com/mike99mac/mariacmdb
@@ -95,7 +94,7 @@ This mariacmdb solution was designed to be very easy to use.
 Following is the help output for the line command ``mariacmdb.py``:
 
 ```
-$ mariacmdb.py -h
+mariacmdb.py -h
 usage: mariacmdb.py [-h] [-v] [-C] [-c COLUMN] [-p PATTERN] [-s SERVER] subcommand
 
 mariacmdb - A simple Configuration Management Database
@@ -114,7 +113,8 @@ options:
   -s SERVER, --server SERVER
                         server to add or remove
 ```
-- Use the ``initialize`` subcommand to create 
+
+- Use the ``initialize`` subcommand to create the ``servers`` table:
 
 ``` 
 $ mariacmdb.py initialize
@@ -122,6 +122,8 @@ Created database 'servers'
 ```
 
 - Use the ``describe`` subcommand to list the attributes of the ``servers`` table: 
+
+```
 mariacmdb.py describe 
 Table servers:
 Field,Type,Null,Key,Default,Extra
@@ -136,7 +138,11 @@ os_ver,varchar(50),YES,,None,
 kernel,varchar(100),YES,,None,
 rootfs,int(11),YES,,None,
 created_at,timestamp,NO,,current_timestamp(),
+```
 
+- Use the ``add`` subcommand to insert rows into the database.  The mariacmdb server must be able to **``ssh``** to all servers to be added to the database.  Following is an example of adding four:
+ 
+```
 mariacmdb.py add --server model800
 Added or updated server model800
 
@@ -148,7 +154,11 @@ Added or updated server model1500
 
 mariacmdb.py add --server model2000
 Added or updated server model12000
+```
 
+- Use the ``query`` subcommand show all rows in the table:
+
+```
 mariacmdb.py query 
 model1000,192.168.12.233,4,4,aarch64,Linux,Debian GNU/Linux 12 (bookworm),6.6.28+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.6.28-1+rpt1 (2024-04-22),29,2024-05-06 14:01:22
 model1500,192.168.12.239,4,4,aarch64,Linux,Ubuntu 22.04.4 LTS,5.15.0-1053-raspi #56-Ubuntu SMP PREEMPT Mon Apr 15 18:50:10 UTC 2024,24,2024-05-06 14:02:01
