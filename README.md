@@ -2,7 +2,7 @@
 This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
 
 # Overview
-There are three main sourc files:
+There are three source files:
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
 - ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API that works through a Web server
 - ``serverinfo``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A small bash script that returns data from managed servers
@@ -14,10 +14,11 @@ Using mariadb, one database named ``cmdb`` is created, and one table named ``ser
 
 Following is a block diagram.
 ![](mariacmdb.jpg) 
+
 mariacmdb block diagram
 
 # Installation
-To install MariaDB, perform the following steps:
+To install MariaDB, perform the following steps.
 
 - Install mariadb and co-requisite packages:
 ```
@@ -49,9 +50,7 @@ cp ~/mariacmdb/usr/local/sbin/mariacmdb /usr/local/sbin
 cp ~/mariacmdb/srv/www/restapi.py /srv/www/mariacmdb
 ```
 
-- Copy the ``serverinfo`` bash script to your home directory.  
-
-The ``-c`` flag on a ``mariacmdb.py add`` command will expect the script to be there and will *push* it to the managed server before running it.
+- Copy the ``serverinfo`` bash script to your home directory.  The ``-c`` flag on a ``mariacmdb.py add`` command will expect the script to be there and will *push* it to the managed server before running it.
 
 ```
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
@@ -92,10 +91,19 @@ Group pi
 # Usage
 This mariacmdb solution was designed to be very easy to use.
 
-The following sections describe the line command and the RESTful API.
+The following sections describe the line command and the RESTful API.
 
-## Line command
-Following is the help output for the line command ``mariacmdb.py``:
+## The mariacmdb.py line command
+One of the following *subcommands* must be supplied to the line command:
+
+- ``add       `` Add a server to be managed - if it already exists, it will be updated  
+- ``describe  `` Show the metadata of the ``servers`` table
+- ``initialize`` Create the ``servers`` table
+- ``query     `` Show the specified rows of the ``servers`` table
+- ``remove    `` Remove a managed server
+- ``update    `` Update all rows in table
+
+Following is the help output for ``mariacmdb.py``:
 
 ```
 mariacmdb.py -h
