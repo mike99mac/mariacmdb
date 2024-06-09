@@ -1,8 +1,8 @@
 # mariacmdb
-A simple Configuration Management Database (CMDB) that uses mariadb to store the data
+This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses *mariadb* to store the data.
 
 # Overview
-It has the following files:
+There are three main sourc files:
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
 - ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API that works through a Web server
 - ``serverinfo``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A small bash script that returns data from managed servers
@@ -10,10 +10,10 @@ It has the following files:
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed. 
 The ``mariacmdb.py`` command must be run by that user.
 
-Using mariadb, one database (``cmdb``) is created, and one table (``servers``) is created in that database.
+Using mariadb, one database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
 
 Following is a block diagram.
-![](mariacmdb.jpg)
+![](mariacmdb.jpg) mariacmdb block diagram
 
 # Installation
 To install MariaDB, perform the following steps:
