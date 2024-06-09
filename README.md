@@ -1,5 +1,5 @@
 # mariacmdb
-This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses *mariadb* to store the data.
+This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
 
 # Overview
 There are three main sourc files:
