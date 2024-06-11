@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """
-This is the mariacmdb RESTful API
+This is the mariacmdb RESTful API.
+It accesses the table 'servers' in the mariadb database 'cmdb'.
 Ex: http://model1500/restapi.py/ping/mem_gb=4
 """
 import sys
@@ -42,7 +43,7 @@ class MariacmdbRestAPI():
     conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="mysql")
     cursor = conn.cursor()                 # open cursor
     try:   
-      cursor.execute("use cmdb")           # use cmdb
+      cursor.execute("use cmdb")
     except mariadb.Error as e:
       print(f"ERROR changing database to 'cmdb': {e}")
       print("</body></html>")
@@ -50,6 +51,7 @@ class MariacmdbRestAPI():
       exit(1)
     rows = "" 
     output = ""
+    # print(f"<h4>running SQL command: {cmd}</h4>")
     try:   
       cursor.execute(cmd)                  # query the cmdb
       rows = cursor.fetchall()
@@ -123,21 +125,27 @@ class MariacmdbRestAPI():
               sql_cmd = f"SELECT COUNT(host_name) FROM servers WHERE {request_words[2]} = \"{request_words[3]}\""
             else:
               sql_cmd = f"SELECT COUNT(host_name) FROM servers" 
+            sql_out = self.run_sql_cmd(sql_cmd) 
+            print('{"num_servers": '+sql_out+'}')  
           case "hostname":
             if num_words == 4:             # search criteria included
               sql_cmd = f"SELECT host_name FROM servers WHERE {request_words[2]} = \"{request_words[3]}\""
             else:
               sql_cmd = f"SELECT host_name FROM servers"
+            sql_out = self.run_sql_cmd(sql_cmd) 
+            print('{"host_names": '+sql_out+'}')    
           case "query":
             if num_words == 4:             # search criteria included
               sql_cmd = f"SELECT * FROM servers WHERE {request_words[2]} = \"{request_words[3]}\""
             else:
               sql_cmd = f"SELECT * FROM servers"
+            sql_out = self.run_sql_cmd(sql_cmd) 
+            print('{"servers": '+'"'+sql_out+'"}')  
           case _:  
             print(f"unexpected: operation = {operation}")
             exit(1)
-        sql_out = self.run_sql_cmd(sql_cmd) # return output of SQL command
-        print('{"num_servers": '+sql_out+'}')
+        
+        
 
 # main
 mariacmdbRestAPI = MariacmdbRestAPI()      # create a singleton

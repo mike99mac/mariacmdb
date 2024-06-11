@@ -275,7 +275,7 @@ class Mariacmdb:
         self.log.error(f"delete_row(): did not find server {server} in CMDB")
         return 2 
       else:   
-        self.log.debug(f"delete_row(): deleted server = {server} cursor.rowcount = {cursor.rowcount}")  
+        self.log.debug(f"delete_row(): deleted server = {server} cursor.rowcount = {self.cursor.rowcount}")  
     except mariadb.Error as e:
       self.log.error(f"delete_row(): ERROR deleting row in table 'servers': {e}")
       self.conn.close()                         # close connection

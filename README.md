@@ -4,7 +4,7 @@ This repository contains Python and bash code that form a simple Configuration M
 # Overview
 There are three source files:
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
-- ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API that works through a Web server
+- ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API interfaced through Apache 
 - ``serverinfo``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A small bash script that returns data from managed servers
 
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed. 
@@ -23,7 +23,7 @@ To install MariaDB, perform the following steps.
 - Install mariadb and co-requisite packages:
 ```
 sudo apt update
-sudo apt install mariadb-server libmariadb3 libmariadb-dev
+sudo apt install mariadb-server libmariadb3 libmariadb-dev apache2
 pip3 install mariadb
 pip install mysqlx-connector-python
 ```
@@ -96,12 +96,12 @@ The following sections describe the line command and the RESTful API.
 ## The mariacmdb.py line command
 One of the following *subcommands* must be supplied to the line command:
 
-- ``add       `` Add a server to be managed - if it already exists, it will be updated  
-- ``describe  `` Show the metadata of the ``servers`` table
-- ``initialize`` Create the ``servers`` table
-- ``query     `` Show the specified rows of the ``servers`` table
-- ``remove    `` Remove a managed server
-- ``update    `` Update all rows in table
+- ``add       `` Add a server to be managed - if it already exists, it will be updated.  
+- ``describe  `` Show the metadata of the ``servers`` table.
+- ``initialize`` Create the ``servers`` table.
+- ``query     `` Show the specified rows of the ``servers`` table.
+- ``remove    `` Remove a managed server.
+- ``update    `` Update all rows in table.
 
 Following is the help output for ``mariacmdb.py``:
 
