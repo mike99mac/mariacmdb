@@ -47,7 +47,7 @@ class Mariacmdb:
                         level=logging.INFO)
     self.console = logging.StreamHandler()          # set up logging to console
     self.console.setLevel(logging.INFO)
-    self.formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')  # set a format which is simpler for console use
+    self.formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')  # format is simpler for console use
     self.console.setFormatter(self.formatter)
     logging.getLogger('').addHandler(self.console) # add the handler to the root logger
     self.log = logging.getLogger(__name__)
@@ -101,25 +101,12 @@ class Mariacmdb:
     self.select_host_names_cmd = "SELECT host_name FROM servers"
     self.use_cmd = "USE cmdb" 
 
-  def connect_db(self):   
-    """
-    Connect to mariadb running on this server
-    """   
-    return mariadb.connect(user="root", password="pi", host="127.0.0.1", database="mysql")   
-
   def connect_to_cmdb(self):   
     """
-    Connect to mariadb and use datase cmdb 
+    Connect to mariadb, use datase cmdb and establish a cursor 
     """  
-    self.conn = self.connect_db()          # open connection
+    self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="cmdb")   
     self.cursor = self.conn.cursor()       # open cursor
-    try:   
-      self.cursor.execute(self.use_cmd)    # use cmdb 
-      self.log.debug("connect_to_cmdb(): changed database to 'cmdb'")
-    except mariadb.Error as e:
-      self.log.error(f"connect_to_cmdb(): ERROR changing database to 'cmdb': {e}")
-      self.conn.close()                    # cannot contiue
-      return -1 
     
   def query_cmdb(self):
     """
@@ -172,7 +159,7 @@ class Mariacmdb:
     - USE cmdb
       CREATE TABLE 'servers'
     """
-    self.conn = self.connect_db()          # open connection
+    self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="cmdb")   
     self.cursor = self.conn.cursor()       # open cursor
     try:   
       self.cursor.execute(self.create_db_cmd) # create database "cmdb"
@@ -271,7 +258,7 @@ class Mariacmdb:
     try: 
       self.cursor.execute(cmd)  
       if self.cursor.rowcount == 0:        # no matching server
-        self.log.debug(f"delete_row(): cursor.rowcount = {cursor.rowcount}")  
+        self.log.debug(f"delete_row(): cursor.rowcount = {self.cursor.rowcount}")  
         self.log.error(f"delete_row(): did not find server {server} in CMDB")
         return 2 
       else:   
@@ -280,7 +267,8 @@ class Mariacmdb:
       self.log.error(f"delete_row(): ERROR deleting row in table 'servers': {e}")
       self.conn.close()                         # close connection
       return 1    
-    self.commit_changes()           
+    self.commit_changes()  
+    self.log.info(f"delete_row(): deleted row for server {server}")
   
   def describe_table(self):
     """
@@ -291,7 +279,7 @@ class Mariacmdb:
       return -1
     try:   
       self.cursor.execute(self.describe_cmd)    # describe the table
-      rows = cursor.fetchall()
+      rows = self.cursor.fetchall()
       print("Table servers:")
       print("Field,Type,Null,Key,Default,Extra")
       print("---------------------------------")

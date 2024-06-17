@@ -2,11 +2,10 @@
 #
 # serverinfo - return hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level 
 #
-# It is distributed under the MIT license
-#
-if [ $# != 0 ]; then                       # if any arg passed => give help
-  echo "Name:  serverinfo - returns:"
-  echo "         hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level root FS %full"
+
+# if any arg is passed, give help
+if [ $# != 0 ]; then                       # arg passed
+  echo "Name:  serverinfo - return hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level"
   echo "Usage: serverinfo"
   exit 1
 fi
@@ -33,4 +32,6 @@ if [ ${#distro} = 0 ]; then                 # empty var
 fi 
 kernel=`uname -r -v`                        # kernel release and version"
 rootfsFull=`df -h / | tail -1 | awk '{print $5}' | sed 's/%//g'`
-echo "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$os,$distro,$kernel,$rootfsFull" # return CSV data
+
+# return info
+echo "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$os,$distro,$kernel,$rootfsFull"
