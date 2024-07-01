@@ -137,9 +137,17 @@ class Mariacmdb:
       if rows == []:
         self.log.debug("query_cmdb(): No records found")
         return 2                           # no records found
-      else:                                # print rows
-        for i in rows:
-          print(*i, sep=',') 
+      else:    
+        row_list = [list(i) for i in rows]
+        #print(f"type(rows): {type(rows)}") 
+        # num_rows = len(rows)
+        # row_list = [[]] * num_rows         # list of N lists
+        # i = 0
+        # for next_row in rows:
+        #   row_list[i] = next_row           
+        #   #print(f"i: {i} row_list: {row_list}")
+        #   i += 1
+        print(row_list)  
     except mariadb.Error as e:
       self.log.warning(f"WARNING - query_cmdb(): Exception searching database: {e}")
       return 1

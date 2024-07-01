@@ -1,0 +1,24 @@
+table, th, td {
+  border: 2px solid black;
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+tr:nth-of-type(odd) {
+  background-color:#ffee80;                /* odd rows light yellow */ 
+}
+tr:nth-of-type(even) {
+  background-color:#80bdff;                /* even rows light blue */
+}
+h1 {
+  color: #0073e6;
+}
+
+/* why is this not working?
+body {
+  background-image:    url(/ukr_flag_bg.png);
+  background-repeat:   no-repeat; 
+  background-size:     cover; 
+  background-position: center center;
+}
+*/  
