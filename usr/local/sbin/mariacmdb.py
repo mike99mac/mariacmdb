@@ -33,6 +33,7 @@ Examples:
 - mariacmdb.py -v query
 """
 import argparse
+import datetime
 import logging
 import mariadb
 import os
@@ -74,17 +75,22 @@ class Mariacmdb:
         cpus INT,
         mem_gb INT,
         arch VARCHAR(50),
+        arch_com VARCHAR(50),
         os VARCHAR(100),
         os_ver VARCHAR(50), 
         kernel VARCHAR(100),
         rootfs INT,
+        app VARCHAR(50),
+        grp VARCHAR(50),
+        owner VARCHAR(50),
+        last_ping TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       """
     self.replace_row_cmd = """
       REPLACE INTO servers (
-        host_name, ip_addr, cpus, mem_gb, arch, os, os_ver, kernel, rootfs) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        host_name, ip_addr, cpus, mem_gb, arch, arch_com, os, os_ver, kernel, rootfs, app, grp, owner) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       """
     self.select_cmd = """
       SELECT * FROM servers WHERE host_name LIKE ptrn 
@@ -96,6 +102,9 @@ class Mariacmdb:
         OR os_ver LIKE ptrn 
         OR kernel LIKE ptrn
         OR rootfs LIKE ptrn;
+        OR app LIKE ptrn;
+        OR grp LIKE ptrn;
+        OR owner LIKE ptrn;
         """
     self.select_all_cmd = "SELECT * FROM servers"
     self.select_host_names_cmd = "SELECT host_name FROM servers"
@@ -138,7 +147,9 @@ class Mariacmdb:
         self.log.debug("query_cmdb(): No records found")
         return 2                           # no records found
       else:    
-        row_list = [list(i) for i in rows]
+        for i in rows:
+          print(*i, sep=',') 
+        # row_list = [list(i) for i in rows]
         #print(f"type(rows): {type(rows)}") 
         # num_rows = len(rows)
         # row_list = [[]] * num_rows         # list of N lists
@@ -147,7 +158,7 @@ class Mariacmdb:
         #   row_list[i] = next_row           
         #   #print(f"i: {i} row_list: {row_list}")
         #   i += 1
-        print(row_list)  
+        # print(row_list)  
     except mariadb.Error as e:
       self.log.warning(f"WARNING - query_cmdb(): Exception searching database: {e}")
       return 1
