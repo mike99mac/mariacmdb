@@ -2,10 +2,9 @@
 #
 # serverinfo - return hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level 
 #
-
 # if any arg is passed, give help
 if [ $# != 0 ]; then                       # arg passed
-  echo "Name:  serverinfo - return hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level"
+  echo "Name:  serverinfo - return hostname, IP addr, num CPUs, GB of memory, etc." 
   echo "Usage: serverinfo"
   exit 1
 fi
@@ -24,7 +23,44 @@ memKB=`cat /proc/meminfo | head -1 | awk '{print $2}'`
 cmd="echo \"scale=1; $memKB/1048576\" | bc" # KB to GB
 memGB=`eval $cmd`                           # do the math
 memGB=`printf "%.0f" $memGB`                # round to nearest int 
+
+# get architecture and the corresponding more commonly spoken words
 arch=`arch`                                 # hardware platform
+case $arch in
+  "i686"|"x86_64")
+    arch_com="intel"
+    ;;
+  "aarch64"|"arm64")
+    arch_com="arm"
+    ;;
+  "amd64")
+    arch_com="amd"
+    ;;
+  "s390x")
+    arch_com="zlinux"
+    ;;
+  *)
+    arch_com="unknown"    
+    ;;
+esac
+
+# get application, group and owner if the data exists in /etc/
+cd /etc
+if [ -s app ]; then                         # file exists and is not empty
+  app=`cat app`
+else
+  app="unknown"
+fi
+if [ -s grp ]; then  
+  grp=`cat grp`
+else
+  grp="unknown"
+fi
+if [ -s owner ]; then 
+  owner=`cat owner`
+else
+  owner="unknown"
+fi
 os=`uname -s`                               # kernel name
 distro=`head -1 /etc/os-release | sed -e 's/PRETTY_NAME=//g' -e 's/"//g'`
 if [ ${#distro} = 0 ]; then                 # empty var
@@ -32,6 +68,4 @@ if [ ${#distro} = 0 ]; then                 # empty var
 fi 
 kernel=`uname -r -v`                        # kernel release and version"
 rootfsFull=`df -h / | tail -1 | awk '{print $5}' | sed 's/%//g'`
-
-# return info
-echo "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$os,$distro,$kernel,$rootfsFull"
+echo "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$arch_com,$os,$distro,$kernel,$rootfsFull,$app,$grp,$owner"
