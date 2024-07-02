@@ -2,13 +2,14 @@
 This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
 
 # Overview
-There are three source files:
+There are four source files:
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
 - ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API interfaced through Apache 
-- ``serverinfo``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A small bash script that returns data from managed servers
+- ``finder.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GUI search script with a browser interface
+- ``serverinfo``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Bash script that returns data from managed servers
 
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed. 
-The ``mariacmdb.py`` command must be run by that user.
+``mariacmdb.py`` commands must be run by that user.
 
 Using mariadb, one database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
 
@@ -42,15 +43,14 @@ cd
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
-- Copy the line command to ``/usr/local/sbin`` and the RESTful API command to a CGI directory of your Web server. 
-In this example, Apache is configured with ``/srv/www/maraicmdb/`` as a CGI directory. 
+- Copy the line command to ``/usr/local/sbin`` and the CGI files to your Web server.  In this example, Apache is configured with ``/srv/www/maraicmdb/`` as a CGI directory. 
 
 ```
 cp ~/mariacmdb/usr/local/sbin/mariacmdb /usr/local/sbin
-cp ~/mariacmdb/srv/www/restapi.py /srv/www/mariacmdb
+cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
 ```
 
-- Copy the ``serverinfo`` bash script to your home directory.  The ``-c`` flag on a ``mariacmdb.py add`` command will expect the script to be there and will *push* it to the managed server before running it.
+- Copy the ``serverinfo`` bash script to your home directory.  When the ``-C`` flag is included on ``mariacmdb.py add`` commands, it will expect the script to be there and will *push* it to the managed server before running it remotely.
 
 ```
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
@@ -98,7 +98,7 @@ One of the following *subcommands* must be supplied to the line command:
 
 - ``add       `` Add a server to be managed - if it already exists, it will be updated.  
 - ``describe  `` Show the metadata of the ``servers`` table.
-- ``initialize`` Create the ``servers`` table.
+- ``init      `` Create the ``servers`` table. 
 - ``query     `` Show the specified rows of the ``servers`` table.
 - ``remove    `` Remove a managed server.
 - ``update    `` Update all rows in table.
@@ -112,7 +112,7 @@ usage: mariacmdb.py [-h] [-v] [-C] [-c COLUMN] [-p PATTERN] [-s SERVER] subcomma
 mariacmdb - A simple Configuration Management Database
 
 positional arguments:
-  subcommand            Can be 'add', 'describe', 'initialize', 'query', 'remove' or 'update'
+  subcommand            Can be 'add', 'describe', 'init', 'query', 'remove' or 'update'
 
 options:
   -h, --help            show this help message and exit
@@ -126,10 +126,10 @@ options:
                         server to add or remove
 ```
 
-- Use the ``initialize`` subcommand to create the ``servers`` table:
+- Use the ``init`` subcommand to create the ``servers`` table:
 
 ``` 
-$ mariacmdb.py initialize
+$ mariacmdb.py init
 Created database 'servers'
 ```
 
@@ -145,10 +145,15 @@ ip_addr,varchar(20),YES,,None,
 cpus,int(11),YES,,None,
 mem_gb,int(11),YES,,None,
 arch,varchar(50),YES,,None,
+arch_com,varchar(50),YES,,None,
 os,varchar(100),YES,,None,
 os_ver,varchar(50),YES,,None,
 kernel,varchar(100),YES,,None,
 rootfs,int(11),YES,,None,
+app,varchar(50),YES,,None,
+grp,varchar(50),YES,,None,
+owner,varchar(50),YES,,None,
+last_ping,timestamp,NO,,current_timestamp(),
 created_at,timestamp,NO,,current_timestamp(),
 ```
 
@@ -175,9 +180,7 @@ Added or updated server model12000
 ```
 mariacmdb.py query 
 model1000,192.168.12.233,4,4,aarch64,Linux,Debian GNU/Linux 12 (bookworm),6.6.28+rpt-rpi-v8 #1 SMP PREEMPT Debian 1:6.6.28-1+rpt1 (2024-04-22),29,2024-05-06 14:01:22
-model1500,192.168.12.239,4,4,aarch64,Linux,Ubuntu 22.04.4 LTS,5.15.0-1053-raspi #56-Ubuntu SMP PREEMPT Mon Apr 15 18:50:10 UTC 2024,24,2024-05-06 14:02:01
-model2000,192.168.12.163,4,8,aarch64,Linux,Debian GNU/Linux 12 (bookworm),6.6.28+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.6.28-1+rpt1 (2024-04-22),32,2024-05-06 14:02:06
-model800,192.168.12.176,4,4,aarch64,Linux,Ubuntu 22.04.4 LTS,5.15.0-1053-raspi #56-Ubuntu SMP PREEMPT Mon Apr 15 18:50:10 UTC 2024,23,2024-05-06 14:01:04
+TODO: get output with new data structure
 ```
 
 - Use the ``update`` subcommand to update all rows in the ``servers`` table.  There must be the ability to use key-based authentication to ``ssh`` to all managed servers. 
