@@ -4,21 +4,25 @@ table, th, td {
   width: 100%;
   table-layout: fixed;
 }
+
 tr:nth-of-type(odd) {
   background-color:#ffee80;                /* odd rows light yellow */ 
 }
+
 tr:nth-of-type(even) {
   background-color:#80bdff;                /* even rows light blue */
 }
+
+th, td {
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  background-color: #006fe6;
+}
+
 h1 {
   color: #0073e6;
 }
 
-/* why is this not working?
-body {
-  background-image:    url(/ukr_flag_bg.png);
-  background-repeat:   no-repeat; 
-  background-size:     cover; 
-  background-position: center center;
-}
-*/  

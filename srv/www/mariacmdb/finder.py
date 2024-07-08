@@ -6,15 +6,18 @@ from tabulate import tabulate
 class Finder:
   def __init__(self):
     """
-    Initialize globals, create page header
+    Initialize globals, create page header, set background
     """
     self.pattern = ""                      # search pattern
     self.rows = []                         # resulting rows
+    self.headers = ['Host name', 'IP address', 'CPUs', 'Memory', 'Architecture', 'Common arch', 'OS', 'OS version', 'Kernel ver', 'Kernel rel', 'Root fs full', 'App', 'Group', 'Owner', 'Last ping', 'Created']
+
+    # start the HTML page
     print('Content-Type: text/html')
     print()
     print('<!DOCTYPE html>')  
     print('<html><head>')
-    print('  <link rel="stylesheet" href="/finder.css">')
+    print('  <link rel="stylesheet" href="/finder.css">')  # Cascading style sheets
     print('</head>')
 
     # add subtle background of Ukrainian flag to page body
@@ -41,14 +44,13 @@ class Finder:
     cmd = "/usr/local/sbin/mariacmdb.py query"
     if self.pattern != "":                 # search pattern specified
       cmd = f"{cmd} -p {self.pattern}"     # add -p flag
-    print(f"running cmd: {cmd}<br>")
     proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     rc = proc.returncode
-    if rc == 2:                            # no hits
-      self.rows = []
-    else:  
-      self.rows = proc.stdout
-    print(f"Finder.search_cmdb() rc: {rc} rows: {self.rows}<br>")
+    self.rows = []
+    if rc != 2:                            # data found
+      for next_row in proc.stdout.split("\n"):
+        list_row = next_row.split(",")
+        self.rows.append(list_row)         # add list to list of rows
 
   def process_query(self):
     """
@@ -68,18 +70,18 @@ class Finder:
       self.pattern = ""                    # search for all
     else: 
       self.pattern = str(ptrn[1])
-    self.rows = list(self.search_cmdb())
-    rows_type = type(self.rows)
-    print("rocess_query(): type(self.rows)")
+    self.search_cmdb()                     # do search
+
+    # show the search pattern text box and submit button
     print('<form action="/finder.py" method="get" enctype="multipart/form-data">')
     print('  Search pattern: <input maxlength="60" size="60" value="" name="pattern">')
     print('  <input value="Submit" type="submit">')
-    print('</form>')
-    print('<br>') 
-    table = [['one','two','three'],['four','five','six'],['seven','eight','nine']]
-    print(tabulate(table, tablefmt='html'))
-    print("<br>")
-    # print(tabulate(self.rows, tablefmt='html'))
+    print('</form><br>')
+
+    # show the current search pattern if one exists
+    if self.pattern != "":                 # there is a current search pattern
+      print(f"Current search pattern: {self.pattern}<br><br>") 
+    print(tabulate(self.rows, self.headers, tablefmt='html'))
     print('</body></html>')                # end page
 
 # main()
