@@ -36,7 +36,6 @@ sudo mysql_secure_installation
 - Clone this repo to your home directory:
 
 ```
-cd
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
@@ -44,7 +43,7 @@ git clone https://github.com/mike99mac/mariacmdb
 
 
 ```
-sudo cp ~/mariacmdb/usr/local/sbin/mariacmdb.py /usr/local/sbin
+sudo cp $HOME/mariacmdb/usr/local/sbin/mariacmdb.py /usr/local/sbin
 ```
 
 - Copy the CGI files to a new directory ``/srv/www/maraicmdb/``. 
@@ -89,6 +88,33 @@ Group pi
 
   ErrorLog ${APACHE_LOG_DIR}/error.log
   CustomLog ${APACHE_LOG_DIR}/access.log combined
+```
+
+- Following is the systemd ``service`` file. 
+
+```
+cat /etc/systemd/system/apache2.service
+```
+
+```
+[Unit]
+Description=The Apache HTTP Server
+After=network.target remote-fs.target nss-lookup.target
+Documentation=https://httpd.apache.org/docs/2.4/
+
+[Service]
+Type=forking
+Environment=APACHE_STARTED_BY_SYSTEMD=true
+ExecStartPre=/usr/local/sbin/mklogdir
+ExecStart=/usr/sbin/apachectl start
+ExecStop=/usr/sbin/apachectl graceful-stop
+ExecReload=/usr/sbin/apachectl graceful
+KillMode=mixed
+PrivateTmp=true
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
 ```
 
 # Usage
