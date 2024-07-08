@@ -26,15 +26,12 @@ To install MariaDB, perform the following steps.
 sudo apt update
 sudo apt install mariadb-server libmariadb3 libmariadb-dev apache2
 pip3 install mariadb
-pip install mysqlx-connector-python
 ```
 
 - Issue the following command and answer the many security questions:
 ```
 sudo mysql_secure_installation
 ```
-
-Remember the MariaDB root password!
 
 - Clone this repo to your home directory:
 
@@ -43,14 +40,20 @@ cd
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
-- Copy the line command to ``/usr/local/sbin`` and the CGI files to your Web server.  In this example, Apache is configured with ``/srv/www/maraicmdb/`` as a CGI directory. 
+- Copy the line command to ``/usr/local/sbin``
+
 
 ```
-cp ~/mariacmdb/usr/local/sbin/mariacmdb /usr/local/sbin
-cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
+sudo cp ~/mariacmdb/usr/local/sbin/mariacmdb.py /usr/local/sbin
 ```
 
-- Copy the ``serverinfo`` bash script to your home directory.  When the ``-C`` flag is included on ``mariacmdb.py add`` commands, it will expect the script to be there and will *push* it to the managed server before running it remotely.
+- Copy the CGI files to a new directory ``/srv/www/maraicmdb/``. 
+
+```
+sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
+```
+
+- Copy the ``serverinfo`` script to your home directory.  When the ``-C`` flag is included on ``mariacmdb.py add`` command, it will first copy the script to the managed server before running it remotely.
 
 ```
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
