@@ -58,7 +58,11 @@ sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
 ```
 
-Following is the Apache configuration file used in this document:
+- Following is the Apache configuration file used in this document:
+
+```
+# cat /etc/apache2/sites-available/mariacmdb.conf
+```
 
 ```
 #
@@ -90,6 +94,12 @@ Group pi
   CustomLog ${APACHE_LOG_DIR}/access.log combined
 ```
 
+- Enable the site
+
+```
+sudo a2ensite mariacmdb.conf
+```
+
 - Following is the systemd ``service`` file. 
 
 ```
@@ -115,6 +125,18 @@ Restart=on-abort
 
 [Install]
 WantedBy=multi-user.target
+```
+
+- Set Apache to start at boot time:
+
+```
+sudo systemctl enable apache2
+```
+
+- Start Apache now:
+
+```
+sudo systemctl start apache2
 ```
 
 # Usage
