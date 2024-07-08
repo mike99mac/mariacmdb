@@ -9,12 +9,17 @@ It consists of a database named 'cmdb' with a table named 'servers' with these c
 - arch       Architecture
 - os         Operating system
 - os_ver     OS version
-- kernel     Kernel version
+- kerr_ver   Kernel version
+- kern_rel   Kernel release
 - rootfs     Root file system % full
-- created_at Timestamp
+- app        Application running
+- grp        Another way of grouping
+- owner      Owner of the server
+- last_ping  Last time server was pinged or ssh'd to
+- created    Timestamp
 
 It supports the following commands:
-- initialize        Creates the table 'servers' in database 'cmdb'
+- init              Creates the table 'servers' in database 'cmdb'
 - add <SERVER>      If SERVER already exists, record is updated
 - describe          Show the format of the 'servers' database
 - query <PATTERN>   If no PATTERN is supllied, return all rows
@@ -29,7 +34,7 @@ Return codes:
 Examples:
 - mariacmdb.py -v initialize
 - mariacmdb.py describe
-- mariacmdb.py -v add --server johnsbox
+- mariacmdb.py -v add --server model1000
 - mariacmdb.py -v query
 """
 import argparse
@@ -58,7 +63,7 @@ class Mariacmdb:
     self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     self.parser.add_argument("-C", "--copyscript", help="copy script 'serverinfo' to target server before add", action="store_true")
     self.parser.add_argument("-c", "--column", help="column name to search", action="append")
-    self.parser.add_argument("subcommand", help="Can be 'add', 'describe', 'initialize', 'query', 'remove' or 'update'")
+    self.parser.add_argument("subcommand", help="Can be 'add', 'describe', 'init', 'query', 'remove' or 'update'")
     self.parser.add_argument("-p", "--pattern", help="pattern to search for", action="append")
     self.parser.add_argument("-s", "--server", help="server to add or remove", action="append")
     self.args = self.parser.parse_args()
@@ -78,19 +83,20 @@ class Mariacmdb:
         arch_com VARCHAR(50),
         os VARCHAR(100),
         os_ver VARCHAR(50), 
-        kernel VARCHAR(100),
+        kern_ver VARCHAR(50),
+        kern_rel VARCHAR(50),
         rootfs INT,
         app VARCHAR(50),
         grp VARCHAR(50),
         owner VARCHAR(50),
-        last_ping TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        last_ping VARCHAR(50),
+        created VARCHAR(50)
       );
       """
     self.replace_row_cmd = """
       REPLACE INTO servers (
-        host_name, ip_addr, cpus, mem_gb, arch, arch_com, os, os_ver, kernel, rootfs, app, grp, owner) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        host_name, ip_addr, cpus, mem_gb, arch, arch_com, os, os_ver, kern_ver, kern_rel, rootfs, app, grp, owner, last_ping, created) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       """
     self.select_cmd = """
       SELECT * FROM servers WHERE host_name LIKE ptrn 
@@ -100,10 +106,11 @@ class Mariacmdb:
         OR arch LIKE ptrn 
         OR os LIKE ptrn 
         OR os_ver LIKE ptrn 
-        OR kernel LIKE ptrn
-        OR rootfs LIKE ptrn;
-        OR app LIKE ptrn;
-        OR grp LIKE ptrn;
+        OR kern_ver LIKE ptrn
+        OR kern_rel LIKE ptrn
+        OR rootfs LIKE ptrn
+        OR app LIKE ptrn
+        OR grp LIKE ptrn
         OR owner LIKE ptrn;
         """
     self.select_all_cmd = "SELECT * FROM servers"
@@ -149,16 +156,6 @@ class Mariacmdb:
       else:    
         for i in rows:
           print(*i, sep=',') 
-        # row_list = [list(i) for i in rows]
-        #print(f"type(rows): {type(rows)}") 
-        # num_rows = len(rows)
-        # row_list = [[]] * num_rows         # list of N lists
-        # i = 0
-        # for next_row in rows:
-        #   row_list[i] = next_row           
-        #   #print(f"i: {i} row_list: {row_list}")
-        #   i += 1
-        # print(row_list)  
     except mariadb.Error as e:
       self.log.warning(f"WARNING - query_cmdb(): Exception searching database: {e}")
       return 1
@@ -235,7 +232,7 @@ class Mariacmdb:
         self.log.warning(f"find_server(): command {scp_cmd} returned {proc.returncode}")
       else:
         self.log.debug(f"find_server(): command {scp_cmd} returned {proc.returncode}")
-    ssh_cmd = f"ssh {server} {self.script_dir}/serverinfo"  # run script 'serverinfo' and get output
+    ssh_cmd = f"ssh -o ConnectTimeout=5 {server} {self.script_dir}/serverinfo"  # run script 'serverinfo' and get output
     proc = subprocess.run(ssh_cmd, shell=True, capture_output=True, text=True)
     server_data = []
     server_data = proc.stdout.split(",")
@@ -346,7 +343,7 @@ class Mariacmdb:
       self.console.setLevel(logging.DEBUG)
     self.log.debug(f"run_command(): subcommand = {self.args.subcommand}")
     match self.args.subcommand:
-      case 'initialize':
+      case 'init':
         rc = self.initialize()             # ignore 2nd word if any
       case 'add':  
         if self.args.server == None:       # no server name specified

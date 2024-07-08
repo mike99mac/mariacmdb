@@ -20,15 +20,11 @@ if [ ${#IPaddr} = 0 ]; then                # empty var
 fi
 numCPUs=`grep ^processor /proc/cpuinfo | wc -l`
 memKB=`cat /proc/meminfo | head -1 | awk '{print $2}'`
-cmd="echo \"scale=1; $memKB/1048576\" | bc" # KB to GB
-memGB=`eval $cmd`                           # do the math
-memGB=`printf "%.0f" $memGB`                # round to nearest int 
-
-# get architecture and the corresponding more commonly spoken words
-arch=`arch`                                 # hardware platform
+let memGB="( $memKB + 524288 ) / (1024 * 1024 )" # round to nearest GB
+arch=`arch`                                # hardware platform
 case $arch in
   "i686"|"x86_64")
-    arch_com="intel"
+    arch_com="intel"                       # more common word
     ;;
   "aarch64"|"arm64")
     arch_com="arm"
@@ -44,7 +40,7 @@ case $arch in
     ;;
 esac
 
-# get application, group and owner if the data exists in /etc/
+# get application, group, owner, creation data and last pinged if the data exists in /etc/
 cd /etc
 if [ -s app ]; then                         # file exists and is not empty
   app=`cat app`
@@ -61,11 +57,18 @@ if [ -s owner ]; then
 else
   owner="unknown"
 fi
+last_ping=`date +"%y-%m-%d-%H:%M:%S"`       # consider an ssh a ping
+if [ -s created ]; then 
+  created=`cat created`
+else
+  created="unknown"
+fi
 os=`uname -s`                               # kernel name
 distro=`head -1 /etc/os-release | sed -e 's/PRETTY_NAME=//g' -e 's/"//g'`
 if [ ${#distro} = 0 ]; then                 # empty var
   distro="unknown"
 fi 
-kernel=`uname -r -v`                        # kernel release and version"
+kern_ver=`uname -v`                          # kernel 
+kern_rel=`uname -r`                          # kernel release 
 rootfsFull=`df -h / | tail -1 | awk '{print $5}' | sed 's/%//g'`
-echo "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$arch_com,$os,$distro,$kernel,$rootfsFull,$app,$grp,$owner"
+echo -n "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$arch_com,$os,$distro,$kern_ver,$kern_rel,$rootfsFull,$app,$grp,$owner,$last_ping,$created"
