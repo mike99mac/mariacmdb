@@ -25,7 +25,9 @@ To install MariaDB, perform the following steps.
 ```
 sudo apt update
 sudo apt install mariadb-server libmariadb3 libmariadb-dev apache2
-pip3 install mariadb
+python3 -m venv venv
+. venv/bin/activate  
+pip3 install mariadb mysql-connector-python
 ```
 
 - Issue the following command and answer the many security questions:
@@ -92,6 +94,7 @@ Group pi
 
   ErrorLog ${APACHE_LOG_DIR}/error.log
   CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
 ```
 
 - Enable the site
