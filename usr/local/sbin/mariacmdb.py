@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/home/pi/venv_mdb/bin/python3
 """
 mariacmdb is a simple Configuration Management Database (CMDB) based on the mariadb relational database.
 It consists of a database named 'cmdb' with a table named 'servers' with these columns:
@@ -121,8 +121,13 @@ class Mariacmdb:
     """
     Connect to mariadb, use datase cmdb and establish a cursor 
     """  
-    self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="cmdb")   
-    self.cursor = self.conn.cursor()       # open cursor
+    try:
+      self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="cmdb")   
+      self.cursor = self.conn.cursor()       # open cursor
+    except mariadb.Error as e:
+      self.log.error(f"initialize(): Exception creating database: {e}")
+      self.log.info("Run 'mariacmdb.py init'?")
+      exit(1)
     
   def query_cmdb(self):
     """
@@ -143,9 +148,7 @@ class Mariacmdb:
     else:  
       cmd = self.select_cmd.replace("ptrn", "'%"+pattern+"%'") # put search pattern in query
     self.log.debug(f"query_cmdb(): searching for '{pattern}' with command: {cmd}")
-    if self.connect_to_cmdb() == -1: 
-      self.log.error("query_cmdb(): connect_to_cmdb() failed")
-      return -1
+    self.connect_to_cmdb() 
     rows = ""  
     try:   
       self.cursor.execute(cmd)             # query the cmdb
@@ -164,9 +167,21 @@ class Mariacmdb:
     """
     Commit all SQL changes then close cursor and connection
     """ 
-    self.conn.commit()                     # commit changes
-    self.cursor.close()                    # close cursor
-    self.conn.close()                      # close connection
+    try:
+      self.conn.commit()                   # commit changes
+    except mariadb.Error as e:
+      self.log.error(f"commit_changes(): Exception commiting changes: {e}")
+      exit(1)
+    try:
+      self.cursor.close()                  # close cursor
+    except mariadb.Error as e:
+      self.log.error(f"commit_changes(): Exception closing cursor: {e}")
+      exit(1)
+    try:
+      self.conn.close()                    # close connection
+    except mariadb.Error as e:
+      self.log.error(f"commit_changes(): Exception closing connection: {e}")
+      exit(1)
 
   def initialize(self):  
     """
@@ -175,8 +190,11 @@ class Mariacmdb:
     - USE cmdb
       CREATE TABLE 'servers'
     """
-    self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="cmdb")   
-    self.cursor = self.conn.cursor()       # open cursor
+    try:
+      self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1") 
+      self.cursor = self.conn.cursor()     # open cursor
+    except mariadb.Error as e:
+      self.log.error(f"initialize(): Exception creating database: {e}")
     try:   
       self.cursor.execute(self.create_db_cmd) # create database "cmdb"
       self.conn.commit()                   # commit changes
@@ -265,9 +283,7 @@ class Mariacmdb:
     if self.args.server == None:           # no server name specified
       self.log.error("delete_row(): --server SERVER must be specified with delete")
       return 1
-    if self.connect_to_cmdb() == -1:  
-      self.log.debug("delete_row(): connect_to_cmdb() failed")
-      return -1
+    self.connect_to_cmdb()
     server = str(self.args.server[0])  
     cmd = self.delete_cmd.replace("pattern", "'"+server+"'") # add target server in single quotes
     self.log.debug(f"delete_row(): cmd = {cmd}")  
@@ -343,9 +359,9 @@ class Mariacmdb:
       self.console.setLevel(logging.DEBUG)
     self.log.debug(f"run_command(): subcommand = {self.args.subcommand}")
     match self.args.subcommand:
-      case 'init':
-        rc = self.initialize()             # ignore 2nd word if any
-      case 'add':  
+      case "init"|"initialize":
+        rc = self.initialize() 
+      case "add":  
         if self.args.server == None:       # no server name specified
           self.log.error("run_command(): Option '--server SERVER' must be specified with subcommand 'add'")
           return 1
@@ -354,9 +370,9 @@ class Mariacmdb:
           self.log.debug(f"run_command(): server pings, calling find_server")
           server_data = self.find_server(self.args.server[0])
           rc = self.replace_row(server_data)
-      case "describe":
+      case "describe"|"desc":
         rc = self.describe_table() 
-      case 'remove':
+      case "remove":
         if self.args.server == None:       # no server name specified
           self.log.error("run_command(): Option '--server SERVER' must be specified with subcommand 'remove'")
           return 1
