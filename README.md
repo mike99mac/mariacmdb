@@ -25,8 +25,9 @@ To install MariaDB, perform the following steps.
 ```
 sudo apt update
 sudo apt install mariadb-server libmariadb3 libmariadb-dev apache2
-pip3 install mariadb
-pip install mysqlx-connector-python
+python3 -m venv venv
+. venv/bin/activate  
+pip3 install mariadb mysql-connector-python
 ```
 
 - Issue the following command and answer the many security questions:
@@ -34,29 +35,36 @@ pip install mysqlx-connector-python
 sudo mysql_secure_installation
 ```
 
-Remember the MariaDB root password!
-
 - Clone this repo to your home directory:
 
 ```
-cd
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
-- Copy the line command to ``/usr/local/sbin`` and the CGI files to your Web server.  In this example, Apache is configured with ``/srv/www/maraicmdb/`` as a CGI directory. 
+- Copy the line command to ``/usr/local/sbin``
+
 
 ```
-cp ~/mariacmdb/usr/local/sbin/mariacmdb /usr/local/sbin
-cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
+sudo cp $HOME/mariacmdb/usr/local/sbin/mariacmdb.py /usr/local/sbin
 ```
 
-- Copy the ``serverinfo`` bash script to your home directory.  When the ``-C`` flag is included on ``mariacmdb.py add`` commands, it will expect the script to be there and will *push* it to the managed server before running it remotely.
+- Copy the CGI files to a new directory ``/srv/www/maraicmdb/``. 
+
+```
+sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
+```
+
+- Copy the ``serverinfo`` script to your home directory.  When the ``-C`` flag is included on ``mariacmdb.py add`` command, it will first copy the script to the managed server before running it remotely.
 
 ```
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
 ```
 
-Following is the Apache configuration file used in this document:
+- Following is the Apache configuration file used in this document:
+
+```
+# cat /etc/apache2/sites-available/mariacmdb.conf
+```
 
 ```
 #
@@ -86,6 +94,52 @@ Group pi
 
   ErrorLog ${APACHE_LOG_DIR}/error.log
   CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+```
+
+- Enable the site
+
+```
+sudo a2ensite mariacmdb.conf
+```
+
+- Following is the systemd ``service`` file. 
+
+```
+cat /etc/systemd/system/apache2.service
+```
+
+```
+[Unit]
+Description=The Apache HTTP Server
+After=network.target remote-fs.target nss-lookup.target
+Documentation=https://httpd.apache.org/docs/2.4/
+
+[Service]
+Type=forking
+Environment=APACHE_STARTED_BY_SYSTEMD=true
+ExecStartPre=/usr/local/sbin/mklogdir
+ExecStart=/usr/sbin/apachectl start
+ExecStop=/usr/sbin/apachectl graceful-stop
+ExecReload=/usr/sbin/apachectl graceful
+KillMode=mixed
+PrivateTmp=true
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+```
+
+- Set Apache to start at boot time:
+
+```
+sudo systemctl enable apache2
+```
+
+- Start Apache now:
+
+```
+sudo systemctl start apache2
 ```
 
 # Usage
