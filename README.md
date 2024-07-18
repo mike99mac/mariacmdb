@@ -19,15 +19,63 @@ Following is a block diagram.
 mariacmdb block diagram
 
 # Installation
-To install MariaDB, perform the following steps.
+To install mariacmdb, perform the following steps.
 
-- Install mariadb and co-requisite packages:
+- Update your system:
+
 ```
 sudo apt update
+```
+
+- Install Mariadb, Apache and some co-requisite packages:
+
+```
 sudo apt install mariadb-server libmariadb3 libmariadb-dev apache2
+```
+
+- Create a virtual environment under ``/srv``:
+
+```
+cd /srv
+```
+
+```
 python3 -m venv venv
+```
+
+- Activate the environment:
+
+```
 . venv/bin/activate  
-pip3 install mariadb mysql-connector-python
+```
+
+- Upgrade pip:
+
+```
+/srv/venv/bin/python3 -m pip install --upgrade pip
+```
+
+- Install wheel:
+
+```
+pip install wheel
+```
+
+- Build the Mariadb Connector: 
+
+```
+yum -y install git gcc openssl-devel make cmake
+git clone https://github.com/MariaDB/mariadb-connector-c
+mkdir build && cd build
+cmake ../mariadb-connector-c/ -DCMAKE_INSTALL_PREFIX=/usr
+make
+sudo make install
+```
+
+- Install the Mariadb Python connector:
+
+```
+pip3 install mysql-connector-python
 ```
 
 - Issue the following command and answer the many security questions:
