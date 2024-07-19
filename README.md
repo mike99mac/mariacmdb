@@ -141,10 +141,15 @@ sudo chmod g+w / /srv
 
 ```
 sudo chgrp -R apache venv
+```
+
+- Recursively add group write permissions to the new virtual environment:
+
+```
 sudo chmod -R g+w venv
 ```
 
-- Activate the environment:
+- Activate the environment which the current user will now be able to write to with group privileges:
 
 ```
 . venv/bin/activate  
