@@ -36,62 +36,81 @@ To install mariacmdb, perform the following steps.
     sudo dnf update 
     ```
 
+- Install co-requisite packages.
+
+  - For Debian based:
+    ```
+    sudo apt install cifs-utils curl gcc git  make mlocate net-tools pandoc python3 python3-pip 
+    ```
+
+  - For RHEL based:
+    ```
+    sudo dnf install bzip2-devel cifs-utils curl gcc git libffi-devel make mlocate net-tools openssl-devel pandoc python3 python3-pip vim wget zlib-devel
+    ```
+
 - Install Apache.
 
   - For Debian based:
-```
-sudo apt install apache2
-```
+    ```
+    sudo apt install apache2
+    ```
 
   - For RHEL based:
-```
-sudo apt install httpd
-```
+    ```
+    sudo apt install httpd
+    ```
 
 - Set Apache to start at boot time: 
 
   - For Debian based:
-```
-sudo systemctl enable apache2
-```
+    ```
+    sudo systemctl enable apache2
+    ```
 
   - For RHEL based:
 
-```
-sudo systemctl enable httpd
-```
+    ```
+    sudo systemctl enable httpd
+    ```
 
 - Install Mariadb, Apache and some co-requisite packages:
 
   - For Debian based:
 
-```
-sudo apt install mariadb-server libmariadb3 libmariadb-dev 
-```
+    ```
+    sudo apt install mariadb-server libmariadb3 libmariadb-dev 
+    ```
 
   - For RHEL based:
 
-```
-sudo dnf install MariaDB-server
-```
+    ```
+    sudo dnf install MariaDB-server
+    ```
 
 - For RHEL based:
+    ```
+    sudo systemctl start mariadb
+    ```
+
+- Set the mariadb root password:
+
 ```
-sudo systemctl start mariadb
-
-- Set the mariadb root password
-    tart the MariaDB shell by running the command:
-
 sudo mysql
+```
 
-    Once in the MariaDB shell, change the root user’s password by executing the following command:
+- From the MariaDB shell, change the root password: 
 
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'your_new_password';
-- Create a virtual environment under ``/srv``:
+```
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
+```
+
+- Change to the ``/srv`` directory:
 
 ```
 cd /srv
 ```
+
+- Create a virtual environment under ``/srv``:
 
 ```
 sudo python3 -m venv venv
