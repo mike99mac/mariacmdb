@@ -19,20 +19,79 @@ Following is a block diagram.
 mariacmdb block diagram
 
 # Installation
+These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
+
 To install mariacmdb, perform the following steps.
 
-- Update your system:
+- Login as a non-root user with sudo privileges. 
+- Update your system.
+
+  - For Debian based:
+```
+sudo apt update 
+```
+
+  - For RHEL based:
+```
+sudo dnf update 
+```
+
+- Install Apache
 
 ```
 sudo apt update
 ```
+- Install Apache.
+
+  - For Debian based:
+```
+sudo apt install apache2
+```
+
+  - For RHEL based:
+```
+sudo apt install httpd
+```
+
+- Set Apache to start at boot time: 
+
+  - For Debian based:
+```
+sudo systemctl enable apache2
+```
+
+  - For RHEL based:
+
+```
+sudo systemctl enable httpd
+```
 
 - Install Mariadb, Apache and some co-requisite packages:
 
+  - For Debian based:
+
 ```
-sudo apt install mariadb-server libmariadb3 libmariadb-dev apache2
+sudo apt install mariadb-server libmariadb3 libmariadb-dev 
 ```
 
+  - For RHEL based:
+
+```
+sudo dnf install MariaDB-server
+```
+
+- For RHEL based:
+```
+sudo systemctl start mariadb
+
+- Set the mariadb root password
+    tart the MariaDB shell by running the command:
+
+sudo mysql
+
+    Once in the MariaDB shell, change the root user’s password by executing the following command:
+
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'your_new_password';
 - Create a virtual environment under ``/srv``:
 
 ```
@@ -40,7 +99,7 @@ cd /srv
 ```
 
 ```
-python3 -m venv venv
+sudo python3 -m venv venv
 ```
 
 - Activate the environment:
