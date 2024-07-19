@@ -27,20 +27,15 @@ To install mariacmdb, perform the following steps.
 - Update your system.
 
   - For Debian based:
-```
-sudo apt update 
-```
+    ```
+    sudo apt update 
+    ```
 
   - For RHEL based:
-```
-sudo dnf update 
-```
+    ```
+    sudo dnf update 
+    ```
 
-- Install Apache
-
-```
-sudo apt update
-```
 - Install Apache.
 
   - For Debian based:
