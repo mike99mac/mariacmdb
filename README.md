@@ -119,7 +119,7 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
 cd /srv
 ```
 
-- Create a virtual environment under ``/srv``:
+- Create a virtual environment: 
 
 ```
 sudo python3 -m venv venv
@@ -128,10 +128,13 @@ sudo python3 -m venv venv
 - Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv``
 
 ```
-sudo chgrp apache / 
-sudo chmod g+w / 
-sudo chgrp apache /srv
-sudo chmod g+w /srv
+sudo chgrp apache / /srv
+```
+
+- Add group write permission to ``/`` and ``/srv``
+
+```
+sudo chmod g+w / /srv
 ```
 
 - Recursively change the group of the new virtual environment:
