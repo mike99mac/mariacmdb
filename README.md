@@ -23,7 +23,15 @@ These steps set up a virtual environment under ``/srv/venv``. This is crucial to
 
 To install mariacmdb, perform the following steps.
 
-- Login as a non-root user with sudo privileges. 
+- Login as a non-root user with sudo privileges. Add the group which will be running apache to that user.  
+
+```
+sudo usermod -aG apache mikemac
+su - mikemac
+id
+uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
+```
+
 - Update your system.
 
   - For Debian based:
@@ -40,12 +48,12 @@ To install mariacmdb, perform the following steps.
 
   - For Debian based:
     ```
-    sudo apt install cifs-utils curl gcc git  make mlocate net-tools pandoc python3 python3-pip 
+    sudo apt install cifs-utils curl gcc git  make mlocate net-tools pandoc python3 python3-dev python3-pip 
     ```
 
   - For RHEL based:
     ```
-    sudo dnf install bzip2-devel cifs-utils curl gcc git libffi-devel make mlocate net-tools openssl-devel pandoc python3 python3-pip vim wget zlib-devel
+    sudo dnf install bzip2-devel cifs-utils curl gcc git libffi-devel make mlocate net-tools openssl-devel pandoc python3 python3-devel python3-pip vim wget zlib-devel
     ```
 
 - Install Apache.
@@ -57,7 +65,7 @@ To install mariacmdb, perform the following steps.
 
   - For RHEL based:
     ```
-    sudo apt install httpd
+    sudo dnf install httpd
     ```
 
 - Set Apache to start at boot time: 
@@ -87,18 +95,19 @@ To install mariacmdb, perform the following steps.
     sudo dnf install MariaDB-server
     ```
 
-- For RHEL based:
-    ```
-    sudo systemctl start mariadb
-    ```
-
-- Set the mariadb root password:
+- Start mariadb.
 
 ```
-sudo mysql
+sudo systemctl start mariadb
 ```
 
-- From the MariaDB shell, change the root password: 
+- Set the mariadb root password. Enter the MariaDB command-line tool:
+
+```
+sudo mariadb
+```
+
+- From there, change the root password: 
 
 ```
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
@@ -116,6 +125,22 @@ cd /srv
 sudo python3 -m venv venv
 ```
 
+- Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv``
+
+```
+sudo chgrp apache / 
+sudo chmod g+w / 
+sudo chgrp apache /srv
+sudo chmod g+w /srv
+```
+
+- Recursively change the group of the new virtual environment:
+
+```
+sudo chgrp -R apache venv
+sudo chmod -R g+w venv
+```
+
 - Activate the environment:
 
 ```
@@ -125,24 +150,13 @@ sudo python3 -m venv venv
 - Upgrade pip:
 
 ```
-/srv/venv/bin/python3 -m pip install --upgrade pip
+sudo /srv/venv/bin/python3 -m pip install --upgrade pip
 ```
 
 - Install wheel:
 
 ```
-pip install wheel
-```
-
-- Build the Mariadb Connector: 
-
-```
-yum -y install git gcc openssl-devel make cmake
-git clone https://github.com/MariaDB/mariadb-connector-c
-mkdir build && cd build
-cmake ../mariadb-connector-c/ -DCMAKE_INSTALL_PREFIX=/usr
-make
-sudo make install
+sudo pip install wheel
 ```
 
 - Install the Mariadb Python connector:
