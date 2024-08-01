@@ -92,8 +92,14 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
   - For RHEL based:
 
     ```
-    sudo dnf install MariaDB-server
+    sudo dnf install mariadb-server
     ```
+
+- Set mariadb to start at boot time:
+
+```
+sudo systemctl enable mariadb
+```
 
 - Start mariadb.
 
@@ -107,10 +113,11 @@ sudo systemctl start mariadb
 sudo mariadb
 ```
 
-- From there, change the root password: 
+- From there, change the root password, then leave the session: 
 
 ```
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
+exit
 ```
 
 - Change to the ``/srv`` directory:
@@ -151,6 +158,8 @@ sudo chmod -R g+w venv
 
 - Activate the environment which the current user will now be able to write to with group privileges:
 
+You should see the text ``(venv)`` prefixed on the command prompt.
+
 ```
 . venv/bin/activate  
 ```
@@ -170,7 +179,7 @@ sudo pip install wheel
 - Install the Mariadb Python connector:
 
 ```
-pip3 install mysql-connector-python
+sudo pip3 install mysql-connector-python
 ```
 
 - Issue the following command and answer the many security questions:
