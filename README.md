@@ -126,10 +126,35 @@ exit
 cd /srv
 ```
 
-- Create a virtual environment: 
+### Upgrading Python
+
+AlmaLinux 9.4 ships with a base Python version of 3.9.  This is inadequate as the mariacmdb code uses ``match`` statements which were added in 3.10.
+
+To install Python 3.11, perform the following steps.
+
+- Install Python 3.11
+
+```
+sudo dnf install python3.11
+```
+
+- Show the new version:
+
+```
+python3.11 -V
+Python 3.11.7
+```
+
+- Create a virtual environment where the base Python version is 3.10 or greater: 
 
 ```
 sudo python3 -m venv venv
+```
+
+- Create a virtual environment where another Python version was added: 
+
+```
+sudo python3.11 -m venv venv
 ```
 
 - Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv``
@@ -170,12 +195,6 @@ You should see the text ``(venv)`` prefixed on the command prompt.
 sudo /srv/venv/bin/python3 -m pip install --upgrade pip
 ```
 
-- Install wheel:
-
-```
-sudo pip install wheel
-```
-
 - Install the Mariadb Python connector:
 
 ```
@@ -212,7 +231,7 @@ sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
 ```
 
-- Following is the Apache configuration file used in this document:
+- Following is an Apache configuration file for a Debian system:
 
 ```
 # cat /etc/apache2/sites-available/mariacmdb.conf
@@ -249,7 +268,52 @@ Group pi
 </VirtualHost>
 ```
 
-- Enable the site
+- Following is an Apache configuration file for an AlmaLinux system:
+
+```
+# cat /etc/httpd/conf/httpd.conf
+```
+
+```
+#
+# Apache configuration file for mariacmdb
+#
+LoadModule access_compat_module /usr/lib64/httpd/modules/mod_access_compat.so
+LoadModule alias_module         /usr/lib64/httpd/modules/mod_alias.so
+LoadModule authz_core_module    /usr/lib64/httpd/modules/mod_authz_core.so
+LoadModule cgi_module           /usr/lib64/httpd/modules/mod_cgi.so
+LoadModule dir_module           /usr/lib64/httpd/modules/mod_dir.so
+LoadModule mime_module          /usr/lib64/httpd/modules/mod_mime.so
+LoadModule log_config_module    /usr/lib64/httpd/modules/mod_log_config.so
+LoadModule mpm_prefork_module   /usr/lib64/httpd/modules/mod_mpm_prefork.so
+LoadModule unixd_module         /usr/lib64/httpd/modules/mod_unixd.so
+User apache
+Group apache
+ServerName mmac01
+Listen *:80
+ServerAdmin mmacisaac@sinenomine.net
+DocumentRoot /srv/www/mariacmdb
+LogLevel error
+
+<Directory "/srv/www/html">
+  Options Indexes FollowSymLinks
+  AllowOverride all
+  Require all granted
+</Directory>
+
+AddHandler cgi-script .py
+Alias /mariacmdb /srv/www/mariacmdb
+<Directory /srv/www/mariacmdb>
+  Options +ExecCGI
+# DirectoryIndex restapi.py
+  Require all granted
+</Directory>
+
+ErrorLog /var/log/httpd/error.log
+CustomLog /var/log/httpd/access.log combined
+```
+
+- Enable the site:
 
 ```
 sudo a2ensite mariacmdb.conf
