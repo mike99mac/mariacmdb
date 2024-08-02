@@ -126,7 +126,7 @@ exit
 cd /srv
 ```
 
-### Upgrading Python
+### Upgrade Python
 
 AlmaLinux 9.4 ships with a base Python version of 3.9.  This is inadequate as the mariacmdb code uses ``match`` statements which were added in 3.10.
 
@@ -144,6 +144,9 @@ sudo dnf install python3.11
 python3.11 -V
 Python 3.11.7
 ```
+
+### Create the virtual environment
+Now that the co-requisites are satisfied, the virtual environment can be created with the following steps: 
 
 - Create a virtual environment where the base Python version is 3.10 or greater: 
 
