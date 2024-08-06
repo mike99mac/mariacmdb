@@ -21,7 +21,7 @@ mariacmdb block diagram
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
 
-When there are differences, separate steps are given for Debian and RHEL are given.
+When there are differences, separate steps are given for Debian and RHEL bases Linuxes. 
 
 To install mariacmdb, perform the following steps.
 
@@ -134,7 +134,7 @@ cd /srv
 
 ### Upgrade Python
 
-This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.  
+This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match/case`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.  
 
 To install Python 3.11, perform the following steps.
 
@@ -185,9 +185,6 @@ cd /srv
     sudo chgrp apache / /srv
     ```
 
-```
-```
-
 - Add group write permission to ``/`` and ``/srv``
 
 ```
@@ -196,9 +193,15 @@ sudo chmod g+w / /srv
 
 - Recursively change the group of the new virtual environment:
 
-```
-sudo chgrp -R apache venv
-```
+  - For Debian based:
+    ```
+    sudo chgrp -R www-data venv
+    ```
+
+  - For RHEL based:
+    ```
+    sudo chgrp -R apache venv
+    ```
 
 - Recursively add group write permissions to the new virtual environment:
 
