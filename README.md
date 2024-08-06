@@ -21,6 +21,8 @@ mariacmdb block diagram
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
 
+When there are differences, separate steps are given for Debian and RHEL are given.
+
 To install mariacmdb, perform the following steps.
 
 - Login as a non-root user with sudo privileges. Add the group which will be running apache to that user.  
@@ -37,6 +39,10 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
   - For Debian based:
     ```
     sudo apt update 
+    ```
+
+    ```
+    sudo apt upgrade -y
     ```
 
   - For RHEL based:
@@ -128,7 +134,7 @@ cd /srv
 
 ### Upgrade Python
 
-AlmaLinux 9.4 ships with a base Python version of 3.9.  This is inadequate as the mariacmdb code uses ``match`` statements which were added in 3.10.
+This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.  
 
 To install Python 3.11, perform the following steps.
 
@@ -148,22 +154,38 @@ Python 3.11.7
 ### Create the virtual environment
 Now that the co-requisites are satisfied, the virtual environment can be created with the following steps: 
 
-- Create a virtual environment where the base Python version is 3.10 or greater: 
+- Change to the ``/srv/`` directory: 
 
 ```
-sudo python3 -m venv venv
+cd /srv
 ```
 
-- Create a virtual environment where another Python version was added: 
+- Create a virtual environment in one of two ways: 
+  - where the base Python version is 3.10 or greater: 
 
-```
-sudo python3.11 -m venv venv
-```
+    ```
+    sudo python3 -m venv venv
+    ```
+
+  - Where another Python version was added: 
+
+    ```
+    sudo python3.11 -m venv venv
+    ```
 
 - Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv``
 
+  - For Debian based:
+    ```
+    sudo chgrp www-data / /srv
+    ```
+
+  - For RHEL based:
+    ```
+    sudo chgrp apache / /srv
+    ```
+
 ```
-sudo chgrp apache / /srv
 ```
 
 - Add group write permission to ``/`` and ``/srv``
