@@ -1,6 +1,8 @@
 # mariacmdb
 This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
 
+The name is a conflation of *mariadb* and *CMDB*.
+
 # Overview
 There are four source files:
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
@@ -173,7 +175,7 @@ cd /srv
     sudo python3.11 -m venv venv
     ```
 
-- Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv``
+- Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv/``.
 
   - For Debian based:
     ```
@@ -185,13 +187,13 @@ cd /srv
     sudo chgrp apache / /srv
     ```
 
-- Add group write permission to ``/`` and ``/srv``
+- Add group write permission to ``/`` and ``/srv``.
 
 ```
 sudo chmod g+w / /srv
 ```
 
-- Recursively change the group of the new virtual environment:
+- Recursively change the group of the new virtual environment.
 
   - For Debian based:
     ```
@@ -211,16 +213,16 @@ sudo chmod -R g+w venv
 
 - Activate the environment which the current user will now be able to write to with group privileges:
 
-You should see the text ``(venv)`` prefixed on the command prompt.
 
 ```
 . venv/bin/activate  
 ```
+    You should see the text ``(venv)`` prefixed on the command prompt.
 
 - Upgrade pip:
 
 ```
-sudo /srv/venv/bin/python3.11 -m pip install --upgrade pip
+sudo /srv/venv/bin/python3 -m pip install --upgrade pip
 ```
 
 - Install the Mariadb Python connector and the tabulate package:
