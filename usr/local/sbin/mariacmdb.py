@@ -1,4 +1,4 @@
-#!/home/pi/venv_mdb/bin/python3
+#!/srv/venv/bin/python3.11
 """
 mariacmdb is a simple Configuration Management Database (CMDB) based on the mariadb relational database.
 It consists of a database named 'cmdb' with a table named 'servers' with these columns:
@@ -32,7 +32,7 @@ Return codes:
 2 - No records found 
 
 Examples:
-- mariacmdb.py -v initialize
+- mariacmdb.py -v init
 - mariacmdb.py describe
 - mariacmdb.py -v add --server model1000
 - mariacmdb.py -v query
@@ -48,7 +48,7 @@ import sys
 class Mariacmdb:
   def __init__(self):
     # create a logger that writes both to a file and stdout
-    logging.basicConfig(filename='/home/pi/mariacmdb.log',
+    logging.basicConfig(filename='/var/log/mariadb/mariacmdb.log',
                         format='%(asctime)s %(levelname)s %(message)s',
                         level=logging.INFO)
     self.console = logging.StreamHandler()          # set up logging to console
@@ -58,7 +58,7 @@ class Mariacmdb:
     logging.getLogger('').addHandler(self.console) # add the handler to the root logger
     self.log = logging.getLogger(__name__)
 
-    self.script_dir = "/home/pi"           # directory where script 'serverinfo' resides
+    self.script_dir = os.getenv('HOME')
     self.parser = argparse.ArgumentParser(description = "mariacmdb - A simple Configuration Management Database")
     self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     self.parser.add_argument("-C", "--copyscript", help="copy script 'serverinfo' to target server before add", action="store_true")
@@ -83,7 +83,7 @@ class Mariacmdb:
         arch_com VARCHAR(50),
         os VARCHAR(100),
         os_ver VARCHAR(50), 
-        kern_ver VARCHAR(50),
+        kern_ver VARCHAR(100),
         kern_rel VARCHAR(50),
         rootfs INT,
         app VARCHAR(50),
@@ -115,6 +115,7 @@ class Mariacmdb:
         """
     self.select_all_cmd = "SELECT * FROM servers"
     self.select_host_names_cmd = "SELECT host_name FROM servers"
+    self.server_data = []
     self.use_cmd = "USE cmdb" 
 
   def connect_to_cmdb(self):   
@@ -252,22 +253,25 @@ class Mariacmdb:
         self.log.debug(f"find_server(): command {scp_cmd} returned {proc.returncode}")
     ssh_cmd = f"ssh -o ConnectTimeout=5 {server} {self.script_dir}/serverinfo"  # run script 'serverinfo' and get output
     proc = subprocess.run(ssh_cmd, shell=True, capture_output=True, text=True)
-    server_data = []
-    server_data = proc.stdout.split(",")
-    self.log.debug(f"find_server(): command {ssh_cmd} returncode: {proc.returncode} stdout: {server_data}")
-    return server_data
+    if proc.returncode != 0:               # call to 'serverinfo' failed
+      self.log.error(f"find_server(): command {ssh_cmd} returned {proc.returncode}")
+      return 1
+    self.log.debug(f"find_server(): command {scp_cmd} returned {proc.returncode}")
+    self.server_data = proc.stdout.split(",")
+    self.log.debug(f"find_server(): command {ssh_cmd} returncode: {proc.returncode} stdout: {self.server_data}")
+    return 0
 
-  def replace_row(self, server_data = []): 
+  def replace_row(self): 
     """
     USE cmdb
     INSERT a row into table 'servers' or REPLACE it if host_name is a duplicate
     """
-    server = server_data[0] 
-    self.log.debug(f"replace_row(): server_data = {server_data} server = {server}")
+    server = self.server_data[0] 
+    self.log.debug(f"replace_row(): server_data: {self.server_data} server: {server}")
     self.connect_to_cmdb()
     try: 
       self.log.debug(f"replace_row(): replacing row with: {self.replace_row_cmd}")
-      self.cursor.execute(self.replace_row_cmd, server_data)  
+      self.cursor.execute(self.replace_row_cmd, self.server_data)  
     except mariadb.Error as e:
       self.log.error(f"replace_row() inserting row into table 'servers': {e}")
       self.conn.close()                         # close connection
@@ -337,12 +341,12 @@ class Mariacmdb:
       for next_server in servers:
         next_server = str(next_server).strip("'").strip("(").strip(")").strip(",").strip("'")
         self.log.debug(f"update_cmdb(): next_server = {next_server}")
-        server_data = self.find_server(next_server)
-        self.log.debug(f"update_cmdb(): server_data = {server_data}")
-        if server_data == ['']:            # did not get server data
+        self.server_data = self.find_server(next_server)
+        self.log.debug(f"update_cmdb(): server_data = {self.server_data}")
+        if self.server_data == ['']:       # did not get server data
           self.log.warning(f"update_cmdb(): did not get server_data for {next_server} - skipping")
           continue                         # iterate loop
-        self.replace_row(server_data)
+        self.replace_row()
       self.log.info("update_cmdb() successfully updated table 'servers'")  
     except mariadb.Error as e:
       self.log.warning(f"update_cmdb(): Exception updating database: {e}")
@@ -368,8 +372,11 @@ class Mariacmdb:
         rc = self.ping_server()
         if rc == 0:                        # server pings
           self.log.debug(f"run_command(): server pings, calling find_server")
-          server_data = self.find_server(self.args.server[0])
-          rc = self.replace_row(server_data)
+          rc = self.find_server(self.args.server[0])
+          if rc != 0:
+            self.log.error(f"run_command(): find_server() returned {rc}")
+          else:  
+            rc = self.replace_row()
       case "describe"|"desc":
         rc = self.describe_table() 
       case "remove":
