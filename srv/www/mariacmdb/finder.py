@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/srv/venv/bin/python3.11
 import subprocess
 import sys
 from tabulate import tabulate
@@ -20,7 +20,7 @@ class Finder:
     print('  <link rel="stylesheet" href="/finder.css">')  # Cascading style sheets
     print('</head>')
 
-    # add subtle background of Ukrainian flag to page body
+    # add background of Ukrainian flag to page body
     print('<body style="background-image: url(/ukr_flag_bg.png); background-repeat: no-repeat; background-size: cover; background-position: center; height: 100vh;">')
 
   def print_env(self):
@@ -41,16 +41,19 @@ class Finder:
     """
     Search mariacmdb for the specified pattern
     """
-    cmd = "/usr/local/sbin/mariacmdb.py query"
+    cmd = "/usr/local/sbin/mariacmdb.py -v query"
     if self.pattern != "":                 # search pattern specified
-      cmd = f"{cmd} -p {self.pattern}"     # add -p flag
+      cmd = f"{cmd} -p {self.pattern}"     # add -p <pattern> flag
     proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     rc = proc.returncode
+    print(f"search_cmdb(): cmd: {cmd} rc: {rc}<br>")
     self.rows = []
-    if rc != 2:                            # data found
-      for next_row in proc.stdout.split("\n"):
-        list_row = next_row.split(",")
-        self.rows.append(list_row)         # add list to list of rows
+    #if rc != 2:                            # data found
+    print(f"proc.stdout: {proc.stdout}<br>") 
+    for next_row in proc.stdout.split("\n"):
+      print(f"search_cmdb(): next_row: {next_row}<br>")
+      list_row = next_row.split(",")
+      self.rows.append(list_row)         # add list to list of rows
 
   def process_query(self):
     """
@@ -86,5 +89,5 @@ class Finder:
 
 # main()
 finder = Finder()                          # create a singleton
-# finder.print_env() 
+#finder.print_env() 
 finder.process_query()                     # process the request

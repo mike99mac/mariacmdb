@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/srv/venv/bin/python3.11
 """
 restapi.py - the mariacmdb RESTful API.
 It accesses the table 'servers' in the mariadb database 'cmdb'.
