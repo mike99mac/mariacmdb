@@ -128,7 +128,7 @@ class Mariacmdb:
     except mariadb.Error as e:
       self.log.error(f"initialize(): Exception creating database: {e}")
       self.log.info("Run 'mariacmdb.py init'?")
-      exit(1)
+      exit(3)
     
   def query_cmdb(self):
     """
@@ -172,17 +172,17 @@ class Mariacmdb:
       self.conn.commit()                   # commit changes
     except mariadb.Error as e:
       self.log.error(f"commit_changes(): Exception commiting changes: {e}")
-      exit(1)
+      exit(4)
     try:
       self.cursor.close()                  # close cursor
     except mariadb.Error as e:
       self.log.error(f"commit_changes(): Exception closing cursor: {e}")
-      exit(1)
+      exit(5)
     try:
       self.conn.close()                    # close connection
     except mariadb.Error as e:
       self.log.error(f"commit_changes(): Exception closing connection: {e}")
-      exit(1)
+      exit(6)
 
   def initialize(self):  
     """
@@ -207,13 +207,13 @@ class Mariacmdb:
     except mariadb.Error as e:
       self.log.error(f"initialize(): changing database to 'cmdb': {e}")
       self.conn.close()                    # cannot continue
-      exit(1)
+      exit(7)
     try:   
       self.cursor.execute(self.create_table_cmd) # create database "cmdb"
       self.log.debug(f"initialize(): Created table 'servers'")
     except mariadb.Error as e:
       self.log.error(f"initialize(): ERROR creating table 'servers': {e}")
-      exit(1)
+      exit(8)
     self.commit_changes()  
   
   def ping_server(self):
@@ -390,7 +390,7 @@ class Mariacmdb:
         rc = self.update_cmdb()
       case _:
         self.log.error(f"run_command(): unrecognized subcommand {self.args.subcommand}")  
-        rc = 1
+        rc = 9
     exit(rc)    
 
 # main()

@@ -1,6 +1,8 @@
 # mariacmdb
 This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
 
+The name is a conflation of *mariadb* and *CMDB*.
+
 # Overview
 There are four source files:
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
@@ -21,6 +23,8 @@ mariacmdb block diagram
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
 
+When there are differences, separate steps are given for Debian and RHEL bases Linuxes. 
+
 To install mariacmdb, perform the following steps.
 
 - Login as a non-root user with sudo privileges. Add the group which will be running apache to that user.  
@@ -34,48 +38,52 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
 
 - Update your system.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo apt update 
     ```
 
-  - For RHEL based:
+    ```
+    sudo apt upgrade -y
+    ```
+
+  - For RHEL-based:
     ```
     sudo dnf update 
     ```
 
 - Install co-requisite packages.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo apt install cifs-utils curl gcc git  make mlocate net-tools pandoc python3 python3-dev python3-pip 
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
     ```
     sudo dnf install bzip2-devel cifs-utils curl gcc git libffi-devel make mariadb-connector-c-devel mlocate net-tools openssl-devel pandoc python3 python3-devel python3-pip vim wget zlib-devel
     ```
 
 - Install Apache.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo apt install apache2
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
     ```
     sudo dnf install httpd
     ```
 
 - Set Apache to start at boot time: 
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo systemctl enable apache2
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
 
     ```
     sudo systemctl enable httpd
@@ -83,13 +91,13 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
 
 - Install Mariadb, Apache and some co-requisite packages:
 
-  - For Debian based:
+  - For Debian-based:
 
     ```
     sudo apt install mariadb-server libmariadb3 libmariadb-dev 
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
 
     ```
     sudo dnf install mariadb-server
@@ -150,29 +158,76 @@ exit
 cd /srv
 ```
 
-- Create a virtual environment: 
+### Upgrade Python
+
+This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match/case`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.  
+
+To install Python 3.11, perform the following steps.
+
+- Install Python 3.11
 
 ```
-sudo python3 -m venv venv
+sudo dnf install python3.11
 ```
 
-- Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv``
+- Show the new version:
 
 ```
-sudo chgrp apache / /srv
+python3.11 -V
+Python 3.11.7
 ```
 
-- Add group write permission to ``/`` and ``/srv``
+### Create the virtual environment
+Now that the co-requisites are satisfied, the virtual environment can be created with the following steps: 
+
+- Change to the ``/srv/`` directory: 
+
+```
+cd /srv
+```
+
+- Create a virtual environment in one of two ways: 
+  - where the base Python version is 3.10 or greater: 
+
+    ```
+    sudo python3 -m venv venv
+    ```
+
+  - Where another Python version was added: 
+
+    ```
+    sudo python3.11 -m venv venv
+    ```
+
+- Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv/``.
+
+  - For Debian-based:
+    ```
+    sudo chgrp www-data / /srv
+    ```
+
+  - For RHEL-based:
+    ```
+    sudo chgrp apache / /srv
+    ```
+
+- Add group write permission to ``/`` and ``/srv``.
 
 ```
 sudo chmod g+w / /srv
 ```
 
-- Recursively change the group of the new virtual environment:
+- Recursively change the group of the new virtual environment.
 
-```
-sudo chgrp -R apache venv
-```
+  - For Debian-based:
+    ```
+    sudo chgrp -R www-data venv
+    ```
+
+  - For RHEL-based:
+    ```
+    sudo chgrp -R apache venv
+    ```
 
 - Recursively add group write permissions to the new virtual environment:
 
@@ -182,38 +237,32 @@ sudo chmod -R g+w venv
 
 - Activate the environment which the current user will now be able to write to with group privileges:
 
-You should see the text ``(venv)`` prefixed on the command prompt.
-
 ```
 . venv/bin/activate  
 ```
+    You should see the text ``(venv)`` prefixed on the command prompt.
 
 - Upgrade pip:
 
 ```
-sudo /srv/venv/bin/python3 -m pip install --upgrade pip
+/srv/venv/bin/python3 -m pip install --upgrade pip
 ```
 
-- Install wheel:
+- Install Mariadb, the Python connector and the tabulate package:
 
 ```
-sudo pip install wheel
-```
-
-- Install the Mariadb Python connector:
-
-```
-sudo pip3 install mysql-connector-python
+python3 -m pip install mariadb mysql-connector-python tabulate
 ```
 
 - Issue the following command and answer the many security questions:
 ```
-sudo mysql_secure_installation
+mysql_secure_installation
 ```
 
 - Clone this repo to your home directory:
 
 ```
+cd;
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
@@ -236,7 +285,7 @@ sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
 ```
 
-- Following is the Apache configuration file used in this document:
+- Following is an Apache configuration file for a Debian-based Linux:
 
 ```
 # cat /etc/apache2/sites-available/mariacmdb.conf
@@ -273,7 +322,52 @@ Group pi
 </VirtualHost>
 ```
 
-- Enable the site
+- Following is an Apache configuration file for a RHEL-based Linux: 
+
+```
+# cat /etc/httpd/conf/httpd.conf
+```
+
+```
+#
+# Apache configuration file for mariacmdb
+#
+LoadModule access_compat_module /usr/lib64/httpd/modules/mod_access_compat.so
+LoadModule alias_module         /usr/lib64/httpd/modules/mod_alias.so
+LoadModule authz_core_module    /usr/lib64/httpd/modules/mod_authz_core.so
+LoadModule cgi_module           /usr/lib64/httpd/modules/mod_cgi.so
+LoadModule dir_module           /usr/lib64/httpd/modules/mod_dir.so
+LoadModule mime_module          /usr/lib64/httpd/modules/mod_mime.so
+LoadModule log_config_module    /usr/lib64/httpd/modules/mod_log_config.so
+LoadModule mpm_prefork_module   /usr/lib64/httpd/modules/mod_mpm_prefork.so
+LoadModule unixd_module         /usr/lib64/httpd/modules/mod_unixd.so
+User apache
+Group apache
+ServerName mmac01
+Listen *:80
+ServerAdmin mmacisaac@sinenomine.net
+DocumentRoot /srv/www/mariacmdb
+LogLevel error
+
+<Directory "/srv/www/html">
+  Options Indexes FollowSymLinks
+  AllowOverride all
+  Require all granted
+</Directory>
+
+AddHandler cgi-script .py
+Alias /mariacmdb /srv/www/mariacmdb
+<Directory /srv/www/mariacmdb>
+  Options +ExecCGI
+# DirectoryIndex restapi.py
+  Require all granted
+</Directory>
+
+ErrorLog /var/log/httpd/error.log
+CustomLog /var/log/httpd/access.log combined
+```
+
+- Enable the site for Debian-based Linuxes:
 
 ```
 sudo a2ensite mariacmdb.conf
@@ -306,19 +400,29 @@ Restart=on-abort
 WantedBy=multi-user.target
 ```
 
-- Set Apache to start at boot time:
+- Set Apache to start at boot time and now.
 
-```
-sudo systemctl enable apache2
-```
+  - For Debian-based:
 
-- Start Apache now:
+    ```
+    sudo systemctl enable apache2
+    ```
 
-```
-sudo systemctl start apache2
-```
+    ```
+    sudo systemctl start apache2
+    ```
 
-# Usage
+  - For RHEL-based:
+
+    ```
+    sudo systemctl enable apache2
+    ```
+
+    ```
+    sudo systemctl start apache2
+    ```
+
+# Use mariacmdb
 This mariacmdb solution was designed to be very easy to use.
 
 The following sections describe the line command and the RESTful API.
