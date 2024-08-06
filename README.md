@@ -38,7 +38,7 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
 
 - Update your system.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo apt update 
     ```
@@ -47,43 +47,43 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
     sudo apt upgrade -y
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
     ```
     sudo dnf update 
     ```
 
 - Install co-requisite packages.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo apt install cifs-utils curl gcc git  make mlocate net-tools pandoc python3 python3-dev python3-pip 
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
     ```
     sudo dnf install bzip2-devel cifs-utils curl gcc git libffi-devel make mariadb-connector-c-devel mlocate net-tools openssl-devel pandoc python3 python3-devel python3-pip vim wget zlib-devel
     ```
 
 - Install Apache.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo apt install apache2
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
     ```
     sudo dnf install httpd
     ```
 
 - Set Apache to start at boot time: 
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo systemctl enable apache2
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
 
     ```
     sudo systemctl enable httpd
@@ -91,13 +91,13 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
 
 - Install Mariadb, Apache and some co-requisite packages:
 
-  - For Debian based:
+  - For Debian-based:
 
     ```
     sudo apt install mariadb-server libmariadb3 libmariadb-dev 
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
 
     ```
     sudo dnf install mariadb-server
@@ -177,12 +177,12 @@ cd /srv
 
 - Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv/``.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo chgrp www-data / /srv
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
     ```
     sudo chgrp apache / /srv
     ```
@@ -195,12 +195,12 @@ sudo chmod g+w / /srv
 
 - Recursively change the group of the new virtual environment.
 
-  - For Debian based:
+  - For Debian-based:
     ```
     sudo chgrp -R www-data venv
     ```
 
-  - For RHEL based:
+  - For RHEL-based:
     ```
     sudo chgrp -R apache venv
     ```
@@ -213,7 +213,6 @@ sudo chmod -R g+w venv
 
 - Activate the environment which the current user will now be able to write to with group privileges:
 
-
 ```
 . venv/bin/activate  
 ```
@@ -222,23 +221,24 @@ sudo chmod -R g+w venv
 - Upgrade pip:
 
 ```
-sudo /srv/venv/bin/python3 -m pip install --upgrade pip
+/srv/venv/bin/python3 -m pip install --upgrade pip
 ```
 
-- Install the Mariadb Python connector and the tabulate package:
+- Install Mariadb, the Python connector and the tabulate package:
 
 ```
-sudo python3.11 -m pip install mysql-connector-python tabulate
+python3 -m pip install mariadb mysql-connector-python tabulate
 ```
 
 - Issue the following command and answer the many security questions:
 ```
-sudo mysql_secure_installation
+mysql_secure_installation
 ```
 
 - Clone this repo to your home directory:
 
 ```
+cd;
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
@@ -261,7 +261,7 @@ sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
 cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
 ```
 
-- Following is an Apache configuration file for a Debian system:
+- Following is an Apache configuration file for a Debian-based Linux:
 
 ```
 # cat /etc/apache2/sites-available/mariacmdb.conf
@@ -298,7 +298,7 @@ Group pi
 </VirtualHost>
 ```
 
-- Following is an Apache configuration file for an AlmaLinux system:
+- Following is an Apache configuration file for a RHEL-based Linux: 
 
 ```
 # cat /etc/httpd/conf/httpd.conf
@@ -343,7 +343,7 @@ ErrorLog /var/log/httpd/error.log
 CustomLog /var/log/httpd/access.log combined
 ```
 
-- Enable the site:
+- Enable the site for Debian-based Linuxes:
 
 ```
 sudo a2ensite mariacmdb.conf
@@ -376,19 +376,29 @@ Restart=on-abort
 WantedBy=multi-user.target
 ```
 
-- Set Apache to start at boot time:
+- Set Apache to start at boot time and now.
 
-```
-sudo systemctl enable apache2
-```
+  - For Debian-based:
 
-- Start Apache now:
+    ```
+    sudo systemctl enable apache2
+    ```
 
-```
-sudo systemctl start apache2
-```
+    ```
+    sudo systemctl start apache2
+    ```
 
-# Usage
+  - For RHEL-based:
+
+    ```
+    sudo systemctl enable apache2
+    ```
+
+    ```
+    sudo systemctl start apache2
+    ```
+
+# Use mariacmdb
 This mariacmdb solution was designed to be very easy to use.
 
 The following sections describe the line command and the RESTful API.
