@@ -39,21 +39,22 @@ class Finder:
 
   def search_cmdb(self):
     """
-    Search mariacmdb for the specified pattern
+    Search mariacmdb for pattern if included, else get all records
     """
-    cmd = "/usr/local/sbin/mariacmdb.py -v query"
-    if self.pattern != "":                 # search pattern specified
+    cmd = "/usr/local/sbin/mariacmdb.py query"
+    if len(self.pattern) > 1:              # search pattern specified
       cmd = f"{cmd} -p {self.pattern}"     # add -p <pattern> flag
-    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    # print(f"search_cmdb(): cmd: {cmd} ptrn_len = {ptrn_len}<br>") 
+    try:
+      proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    except Exception as e: 
+      print(f"search_cmdb(): Exception calling mariacmdb.py: {e}")
+      exit(3)
     rc = proc.returncode
-    print(f"search_cmdb(): cmd: {cmd} rc: {rc}<br>")
     self.rows = []
-    #if rc != 2:                            # data found
-    print(f"proc.stdout: {proc.stdout}<br>") 
     for next_row in proc.stdout.split("\n"):
-      print(f"search_cmdb(): next_row: {next_row}<br>")
       list_row = next_row.split(",")
-      self.rows.append(list_row)         # add list to list of rows
+      self.rows.append(list_row)           # add list to list of rows
 
   def process_query(self):
     """
@@ -82,7 +83,7 @@ class Finder:
     print('</form><br>')
 
     # show the current search pattern if one exists
-    if self.pattern != "":                 # there is a current search pattern
+    if len(self.pattern) > 1:              # there is a current search pattern
       print(f"Current search pattern: {self.pattern}<br><br>") 
     print(tabulate(self.rows, self.headers, tablefmt='html'))
     print('</body></html>')                # end page

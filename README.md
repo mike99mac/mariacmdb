@@ -103,6 +103,30 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
     sudo dnf install mariadb-server
     ```
 
+- Create a directory for mariadb to log to:
+
+```
+sudo mkdir /var/log/mariadb
+```
+
+- Change the group of that directory to the group that Apache runs as.
+ 
+  - For Debian based:
+    ```
+    sudo chgrp apache /var/log/mariadb
+    ```
+
+  - For RHEL based:
+    ```
+    sudo chgrp www-data /var/log/mariadb
+    ```
+
+- Set the group write bit of the new directory:
+
+```
+sudo chmod g+w /var/log/mariadb
+```
+
 - Set mariadb to start at boot time:
 
 ```
