@@ -1,4 +1,4 @@
-#!/srv/venv/bin/python3.11
+#!/srv/venv/bin/python3
 """
 mariacmdb is a simple Configuration Management Database (CMDB) based on the mariadb relational database.
 It consists of a database named 'cmdb' with a table named 'servers' with these columns:

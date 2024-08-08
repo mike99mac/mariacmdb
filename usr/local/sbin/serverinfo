@@ -71,7 +71,7 @@ else
   distro_ver=`grep ^VERSION_ID /etc/os-release | awk -F'"' '{print $2}'`
   distro="$distro $distro_ver"
 fi 
-kern_ver=`uname -v | sed 's/PREEMPT_DYNAMIC //g'` 
+kern_ver=`uname -v | sed -e 's/PREEMPT_DYNAMIC //g' -e 's/PREEMPT //g'` 
 kern_rel=`uname -r`                          
 rootfsFull=`df -h / | tail -1 | awk '{print $5}' | sed 's/%//g'`
 echo -n "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$arch_com,$os,$distro,$kern_ver,$kern_rel,$rootfsFull,$app,$grp,$owner,$last_ping,$created"
