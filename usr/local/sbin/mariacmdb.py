@@ -47,7 +47,7 @@ import sys
 
 class Mariacmdb:
   def __init__(self):
-    # create a logger that writes both to a file and stdout
+    # create a logger that writes both to stdout and the file /var/log/mariadb/mariacmdb.log - must be R/W by Apache
     logging.basicConfig(filename='/var/log/mariadb/mariacmdb.log',
                         format='%(asctime)s %(levelname)s %(message)s',
                         level=logging.INFO)
@@ -57,7 +57,6 @@ class Mariacmdb:
     self.console.setFormatter(self.formatter)
     logging.getLogger('').addHandler(self.console) # add the handler to the root logger
     self.log = logging.getLogger(__name__)
-
     self.script_dir = os.getenv('HOME')
     self.parser = argparse.ArgumentParser(description = "mariacmdb - A simple Configuration Management Database")
     self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
@@ -104,6 +103,7 @@ class Mariacmdb:
         OR cpus LIKE ptrn 
         OR mem_gb LIKE ptrn 
         OR arch LIKE ptrn 
+        OR arch_com LIKE ptrn 
         OR os LIKE ptrn 
         OR os_ver LIKE ptrn 
         OR kern_ver LIKE ptrn
@@ -341,9 +341,9 @@ class Mariacmdb:
       for next_server in servers:
         next_server = str(next_server).strip("'").strip("(").strip(")").strip(",").strip("'")
         self.log.debug(f"update_cmdb(): next_server = {next_server}")
-        self.server_data = self.find_server(next_server)
+        rc = self.find_server(next_server)
         self.log.debug(f"update_cmdb(): server_data = {self.server_data}")
-        if self.server_data == ['']:       # did not get server data
+        if rc == 1:                        # did not get server data
           self.log.warning(f"update_cmdb(): did not get server_data for {next_server} - skipping")
           continue                         # iterate loop
         self.replace_row()

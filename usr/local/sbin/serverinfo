@@ -10,7 +10,7 @@ if [ $# != 0 ]; then                       # arg passed
 fi
 
 # gather info
-hostName=`hostname`
+hostName=`hostname -s`
 IPaddr=`ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}'`
 if [ ${#IPaddr} = 0 ]; then                # empty var
   IPaddr=`curl -4 ifconfig.co`             # try a different way
@@ -64,11 +64,14 @@ else
   created="unknown"
 fi
 os=`uname -s`                               # kernel name
-distro=`head -1 /etc/os-release | sed -e 's/PRETTY_NAME=//g' -e 's/"//g'`
+distro=`head -1 /etc/os-release | sed -e 's/NAME=//g' -e 's/PRETTY_NAME=//g' -e 's/"//g'`
 if [ ${#distro} = 0 ]; then                 # empty var
   distro="unknown"
+else
+  distro_ver=`grep ^VERSION_ID /etc/os-release | awk -F'"' '{print $2}'`
+  distro="$distro $distro_ver"
 fi 
-kern_ver=`uname -v`                          # kernel 
-kern_rel=`uname -r`                          # kernel release 
+kern_ver=`uname -v | sed 's/PREEMPT_DYNAMIC //g'` 
+kern_rel=`uname -r`                          
 rootfsFull=`df -h / | tail -1 | awk '{print $5}' | sed 's/%//g'`
 echo -n "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$arch_com,$os,$distro,$kern_ver,$kern_rel,$rootfsFull,$app,$grp,$owner,$last_ping,$created"
