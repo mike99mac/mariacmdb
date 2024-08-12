@@ -64,12 +64,9 @@ else
   created="unknown"
 fi
 os=`uname -s`                               # kernel name
-distro=`head -1 /etc/os-release | sed -e 's/NAME=//g' -e 's/PRETTY_NAME=//g' -e 's/"//g'`
+distro=`cat /etc/os-release | egrep '^NAME=|^VERSION_ID=' | xargs | sed -e 's/NAME=//g' -e 's/VERSION_ID=//g'`
 if [ ${#distro} = 0 ]; then                 # empty var
   distro="unknown"
-else
-  distro_ver=`grep ^VERSION_ID /etc/os-release | awk -F'"' '{print $2}'`
-  distro="$distro $distro_ver"
 fi 
 kern_ver=`uname -v | sed -e 's/PREEMPT_DYNAMIC //g' -e 's/PREEMPT //g'` 
 kern_rel=`uname -r`                          
