@@ -256,7 +256,6 @@ class Mariacmdb:
     if proc.returncode != 0:               # call to 'serverinfo' failed
       self.log.error(f"find_server(): command {ssh_cmd} returned {proc.returncode}")
       return 1
-    self.log.debug(f"find_server(): command {scp_cmd} returned {proc.returncode}")
     self.server_data = proc.stdout.split(",")
     self.log.debug(f"find_server(): command {ssh_cmd} returncode: {proc.returncode} stdout: {self.server_data}")
     return 0
@@ -331,27 +330,31 @@ class Mariacmdb:
     """
     Update all rows in 'server' table
     """
+    successes = 0
     if self.connect_to_cmdb() == -1:
       self.log.debug("update_cmdb(): connect_to_cmdb() failed")
       return -1
     try:   
       self.cursor.execute(self.select_host_names_cmd) # get all hostnames in table
       servers = self.cursor.fetchall()
-      self.log.debug(f"update_cmdb(): servers = {servers}")
+      self.log.debug(f"update_cmdb(): servers: {servers}")
+      num_servers = len(servers)
       for next_server in servers:
         next_server = str(next_server).strip("'").strip("(").strip(")").strip(",").strip("'")
-        self.log.debug(f"update_cmdb(): next_server = {next_server}")
+        self.log.debug(f"update_cmdb(): next_server: {next_server}")
         rc = self.find_server(next_server)
-        self.log.debug(f"update_cmdb(): server_data = {self.server_data}")
+        self.log.debug(f"update_cmdb(): server_data: {self.server_data}")
         if rc == 1:                        # did not get server data
           self.log.warning(f"update_cmdb(): did not get server_data for {next_server} - skipping")
           continue                         # iterate loop
         self.replace_row()
+        successes += 1                     # increment counter
       self.log.info("update_cmdb() successfully updated table 'servers'")  
     except mariadb.Error as e:
       self.log.warning(f"update_cmdb(): Exception updating database: {e}")
       self.conn.close()                    # cannot contiue
       return 1
+    self.log.info(f"update_cmdb(): {successes} of {num_servers} servers successfully updated")
 
   def run_command(self):
     """

@@ -1,4 +1,4 @@
-#!/srv/venv/bin/python3.11
+#!/srv/venv/bin/python3
 import subprocess
 import sys
 from tabulate import tabulate
