@@ -57,7 +57,7 @@ if [ -s owner ]; then
 else
   owner="unknown"
 fi
-last_ping=`date +"%y-%m-%d-%H:%M:%S"`       # consider an ssh a ping
+last_ping=`date +"%y-%m-%d %H:%M:%S"`       # consider an ssh a ping
 if [ -s created ]; then 
   created=`cat created`
 else

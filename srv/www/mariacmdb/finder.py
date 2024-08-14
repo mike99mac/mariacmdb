@@ -1,7 +1,6 @@
 #!/srv/venv/bin/python3
 import subprocess
 import sys
-from tabulate import tabulate
 
 class Finder:
   def __init__(self):
@@ -10,14 +9,22 @@ class Finder:
     """
     self.pattern = ""                      # search pattern
     self.rows = []                         # resulting rows
-    self.headers = ['Host name', 'IP address', 'CPUs', 'Memory', 'Architecture', 'Common arch', 'OS', 'OS version', 'Kernel ver', 'Kernel rel', 'Root fs full', 'App', 'Group', 'Owner', 'Last ping', 'Created']
+    self.headers = ['Host name', 'IP address', 'CPUs', 'GB Mem', 'Arch', 'Common arch', 'OS', 'OS ver', 'Kernel ver', 'Kernel rel', 'RootFS % full', 'App', 'Group', 'Owner', 'Last ping', 'Created']
 
     # start the HTML page
     print('Content-Type: text/html')
     print()
     print('<!DOCTYPE html>')  
     print('<html><head>')
-    print('  <link rel="stylesheet" href="/finder.css">')  # Cascading style sheets
+
+    # include jquery and three other libraries to make table editable
+    print('<script type="text/javascript" src="/jquery-3.7.1.slim.min.js"></script>')
+    print('<script type="text/javascript" src="/popper.min.js"></script>')
+    print('<script type="text/javascript" src="/bootstrap.min.js"></script>')
+    print('<script type="text/javascript" src="/bootstable.min.js"></script>')
+    print('<script type="text/javascript" src="/onedit.js"></script>')
+    print('<link rel="icon" type="image/png" href="/finder.ico">')
+    print('<link rel="stylesheet" href="/finder.css">')  # Cascading style sheets
     print('</head>')
 
     # add background of Ukrainian flag to page body
@@ -52,9 +59,27 @@ class Finder:
       exit(3)
     rc = proc.returncode
     self.rows = []
-    for next_row in proc.stdout.split("\n"):
+    row_list = proc.stdout.splitlines()
+    for next_row in row_list: 
       list_row = next_row.split(",")
       self.rows.append(list_row)           # add list to list of rows
+
+  def create_table(self, headers, data):
+    """
+    Given a list of table headers, and table data, produce an HTML table
+    """
+    html = "<table id='server-table'>\n" 
+    html += "<tr>\n"
+    for aHeader in headers:
+      html += "  <th>"+aHeader+"</th>\n"
+    html += "</tr>\n"
+    for row in data:
+      html += "<tr>\n"
+      for cell in row:
+        html += f"  <td>{cell}</td>\n"
+      html += "</tr>\n"
+    html += "</table>"
+    return html
 
   def process_query(self):
     """
@@ -85,7 +110,12 @@ class Finder:
     # show the current search pattern if one exists
     if len(self.pattern) > 1:              # there is a current search pattern
       print(f"Current search pattern: {self.pattern}<br><br>") 
-    print(tabulate(self.rows, self.headers, tablefmt='html'))
+    print(self.create_table(self.headers, self.rows))
+
+    # make the table editable
+    print('<script>')
+    print('$("#server-table").SetEditable({columnsEd: "11,12,13", onEdit:function(){}})')
+    print('</script>')
     print('</body></html>')                # end page
 
 # main()
