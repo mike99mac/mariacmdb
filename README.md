@@ -428,10 +428,10 @@ There is a sample configuration file named ``mariacmdb.conf`` in the repo.  The 
 - Copy it to ``/etc/``:
 
 ```
-sudo cp ~/mariacmdb.conf /etc
+sudo cp ~/mariacmdb/mariacmdb.conf /etc
 ```
 
-- Modify the values if desired. 
+- Modify the values if desired. The root password must be set later in mariadb.
 
 ```
 sudo vi /etc/mariacmdb.conf
@@ -447,7 +447,7 @@ sudo vi /etc/mariacmdb.conf
 # Use mariacmdb
 This mariacmdb solution was designed to be very easy to use.
 
-The following sections describe the line command and the RESTful API.
+The following sections describe the line command, the Web interface and the RESTful API.
 
 ## The mariacmdb.py line command
 One of the following *subcommands* must be supplied to the line command:
@@ -550,8 +550,10 @@ __main__    : INFO     replace_row(): replaced row for server model800
 __main__    : INFO     update_cmdb() successfully updated table 'servers'
 ```
  
-## RESTful API
+## The Web interface
+TODO: write this section 
 
+## RESTful API
 Following is an example of using the RESTful API to search for servers that have 4 CPUs and 4GB of memory.  Three of the four servers do.
 
 ```
