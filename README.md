@@ -139,7 +139,7 @@ sudo systemctl enable mariadb
 sudo systemctl start mariadb
 ```
 
-- Set the mariadb root password. Enter the MariaDB command-line tool:
+- Set the mariadb root password. This must be the same user and password as in ``/etc/mariadb.conf``. Enter the MariaDB command-line tool:
 
 ```
 sudo mariadb
@@ -431,7 +431,7 @@ There is a sample configuration file named ``mariacmdb.conf`` in the repo.  The 
 sudo cp ~/mariacmdb.conf /etc
 ```
 
-- Modify the values if desirect: 
+- Modify the values if desired. 
 
 ```
 sudo vi /etc/mariacmdb.conf
