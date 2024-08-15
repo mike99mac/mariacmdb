@@ -158,7 +158,7 @@ exit
 cd /srv
 ```
 
-### Upgrade Python
+## Upgrade Python
 
 This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match/case`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.  
 
@@ -177,7 +177,7 @@ python3.11 -V
 Python 3.11.7
 ```
 
-### Create the virtual environment
+## Create a virtual environment
 Now that the co-requisites are satisfied, the virtual environment can be created with the following steps: 
 
 - Change to the ``/srv/`` directory: 
@@ -422,8 +422,27 @@ WantedBy=multi-user.target
     sudo systemctl start apache2
     ```
 
-# Create a configuration file
-This mariacmdb solution was designed to be very easy to use.
+## Create a configuration file
+There is a sample configuration file named ``mariacmdb.conf`` in the repo.  The code expects it to be in ``/etc/``.
+
+- Copy it to ``/etc/``:
+
+```
+sudo cp ~/mariacmdb.conf /etc
+```
+
+- Modify the values if desirect: 
+
+```
+sudo vi /etc/mariacmdb.conf
+{
+  "DBuser": "root",
+  "DBpw": "pi",
+  "DBhost": "127.0.0.1",
+  "DBname": "cmdb"
+}
+```
+
 
 # Use mariacmdb
 This mariacmdb solution was designed to be very easy to use.
