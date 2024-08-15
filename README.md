@@ -422,6 +422,9 @@ WantedBy=multi-user.target
     sudo systemctl start apache2
     ```
 
+# Create a configuration file
+This mariacmdb solution was designed to be very easy to use.
+
 # Use mariacmdb
 This mariacmdb solution was designed to be very easy to use.
 

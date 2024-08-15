@@ -39,6 +39,7 @@ Examples:
 """
 import argparse
 import datetime
+import json
 import logging
 import mariadb
 import os
@@ -68,6 +69,10 @@ class Mariacmdb:
     self.args = self.parser.parse_args()
     self.conn = None                       # mariadb connection
     self.cursor = None                     # mariadb cursor
+    self.DBuser = "root"                   # default database user
+    self.DBpw = "pi"                       # default database password
+    self.DBhost = "127.0.0.1"              # default database host
+    self.DBname = "cmdb"                   # default database name
     self.log.debug(f"__init__(): self.args = {str(self.args)}")
     self.create_db_cmd = "CREATE DATABASE cmdb;"
     self.describe_cmd = "DESC servers;"
@@ -117,13 +122,29 @@ class Mariacmdb:
     self.select_host_names_cmd = "SELECT host_name FROM servers"
     self.server_data = []
     self.use_cmd = "USE cmdb" 
+    self.load_config_file()                # read the config file                    
+
+  def load_config_file(self):
+    """
+    read the JSON config file /etc/mariacmdb.conf
+    """
+    try:
+      conf_file = open("/etc/mariacmdb.conf", 'r')
+    except Exception as e:
+      self.log.error("load_config_file(): could not open configuration file /etc/mariacmdb.conf - using defaults")
+      return
+    confJSON = json.loads(conf_file.read())
+    self.DBuser = confJSON['DBuser']
+    self.DBpw = confJSON['DBpw']
+    self.DBhost = confJSON['DBhost']
+    self.DBname = confJSON['DBname']
 
   def connect_to_cmdb(self):   
     """
     Connect to mariadb, use datase cmdb and establish a cursor 
     """  
     try:
-      self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="cmdb")   
+      self.conn = mariadb.connect(user=self.DBuser, password=self.DBpw, host=self.DBhost, database=self.DBname)   
       self.cursor = self.conn.cursor()       # open cursor
     except mariadb.Error as e:
       self.log.error(f"initialize(): Exception creating database: {e}")
