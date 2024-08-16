@@ -23,7 +23,7 @@ class Finder:
     print('<script type="text/javascript" src="/bootstrap.min.js"></script>')
     # print('<script type="text/javascript" src="/bootstable.min.js"></script>')
     print('<script type="text/javascript" src="/bootstable.js"></script>')
-    print('<script type="text/javascript" src="/onedit.js"></script>')
+    # print('<script type="text/javascript" src="/onedit.js"></script>')
     print('<link rel="icon" type="image/png" href="/finder.ico">')
     print('<link rel="stylesheet" href="/finder.css">')           # Finder's CSS's
     print('<link rel="stylesheet" href="/glyphicons-free.css">')   
