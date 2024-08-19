@@ -38,6 +38,8 @@ from urllib.parse import urlparse, parse_qs
 
 class MariacmdbAPI():
   def __init__(self):
+    self.conn = None 
+    self.cursor = None 
     logging.basicConfig(filename='/home/pi/restapi.log',
                         format='%(asctime)s %(levelname)s %(message)s',
                         level=logging.DEBUG)
@@ -65,21 +67,21 @@ class MariacmdbAPI():
     run the SQL command passed in
     """
     self.log.info(f"MariacmdbAPI.run_sql_cmd(): cmd = {cmd}")
-    conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="mysql")
-    cursor = conn.cursor()                 # open cursor
+    self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="mysql")
+    self.cursor = self.conn.cursor()       # open cursor
     try:   
-      cursor.execute("use cmdb")
+      self.cursor.execute("use cmdb")
     except mariadb.Error as e:
       print(f"ERROR changing database to 'cmdb': {e}")
       print("</body></html>")
-      conn.close()                         # cannot contiue
+      self.conn.close()                         # cannot contiue
       exit(1)
     rows = "" 
     output = ""
     self.log.info(f"MariacmdbAPI.run_sql_cmd(): running cmd: {cmd}") 
     try:   
-      cursor.execute(cmd)                  # query the cmdb
-      rows = cursor.fetchall()
+      self.cursor.execute(cmd)                  # query the cmdb
+      rows = self.cursor.fetchall()
       rows = str(rows)                     # convert to string
       rows = rows.replace("(", "").replace(",)", "").replace("'", '"') # clean up SQL fluff
       rows = rows.replace("[", "").replace("]", "")
@@ -89,8 +91,15 @@ class MariacmdbAPI():
       else:  
         output = rows
     except mariadb.Error as e:
-      self.log.error(f"MariacmdbAPI.run_sql_cmd(): output = {output}")  
+      self.log.error(f"MariacmdbAPI.run_sql_cmd(): ERROR! e: {e}")  
     return output  
+
+  def close_conn(self):
+    """
+    Close the SQL cursor, then the connection 
+    """
+    self.cursor.close()
+    self.conn.close()
 
   def parse_query_string(self) -> tuple[str, str]:
     """
@@ -104,8 +113,8 @@ class MariacmdbAPI():
     query_str = proc.stdout.strip('\n')    # get value removing newline
     self.log.debug(f"MariacmdbAPI.parse_query_string(): query_str: {query_str}")
     query_parms = query_str.split('&')
-    operation = query_parms[0]            # get operation
-    query_parms = query_parms[1:]        # chop off operation
+    operation = query_parms[0]             # get operation
+    query_parms = query_parms[1:]          # chop off operation
     return operation, query_parms
 
   def ping_servers(self, where_clause: str) -> str:
@@ -114,6 +123,7 @@ class MariacmdbAPI():
     """
     sql_cmd = f"SELECT host_name FROM servers {where_clause}"
     sql_out = self.run_sql_cmd(sql_cmd)    # list of server host names
+    self.close_conn()
     self.log.info(f"MariacmdbAPI.ping_servers(): sql_out = {sql_out} type(sql_out) = {type(sql_out)}")
     up_servers = 0
     num_servers = 0
@@ -167,6 +177,7 @@ class MariacmdbAPI():
     sql_cmd = f"SELECT COUNT(host_name) FROM servers {where_clause}"
     self.log.debug(f"MariacmdbAPI.count_servers(): sql_cmd: {sql_cmd}")
     sql_out = self.run_sql_cmd(sql_cmd)
+    self.close_conn()
     sql_out = str(sql_out).replace("[", "").replace("]", "")
     if not sql_out:                    # no hits
       sql_out = "0"
@@ -180,6 +191,7 @@ class MariacmdbAPI():
     sql_cmd = f"SELECT host_name FROM servers {where_clause}"
     self.log.debug(f"MariacmdbAPI.get_host_names(): hostname sql_cmd = {sql_cmd}")
     return self.run_sql_cmd(sql_cmd) 
+    self.close_conn()
     print(str(sql_out))    
 
   def get_records(self, where_clause: str) -> str:
@@ -187,11 +199,30 @@ class MariacmdbAPI():
     Send SQL command to return hostnames of specified search
     Return: JSON output
     """
-    # TO DO: this is not emitting valid JSON... but is it needed at all?
     sql_cmd = f"SELECT * FROM servers {where_clause}"
     self.log.debug(f"MariacmdbAPI.get_records(): query sql_cmd = {sql_cmd}")
     sql_out = self.run_sql_cmd(sql_cmd) 
+    self.close_conn()
     return '{"servers": '+'"'+str(sql_out)+'"}'  
+
+  def update_record(self, query_str: str):
+    """
+    query_str contains the host name to be updated and three pieces of metadata
+    Send SQL command to update a record's metadata:
+    - App
+    - Group
+    - Owner
+    """
+    list_len = len(query_str)
+    if list_len != 4:                       # error
+      self.log.error(f"MariacmdbAPI.update_record(): len(query_str): {list_len}, expected 4") 
+      return
+    sql_cmd = f"UPDATE servers SET app = '{query_str[1]}', grp = '{query_str[2]}', owner = '{query_str[3]}' WHERE host_name = '{query_str[0]}'"
+    sql_out = self.run_sql_cmd(sql_cmd)    # update 3 columns
+    self.log.info(f"MariacmdbAPI.update_record(): sql_out = {sql_out} type(sql_out) = {type(sql_out)}")
+    self.conn.commit()                     # commit the changes
+    self.close_conn()
+   
    
   def process_uri(self):
     """
@@ -202,9 +233,7 @@ class MariacmdbAPI():
     for i in range(len(query_parms)):      # uu-decode each element
       query_parms[i] = self.uu_decode(query_parms[i]) 
     where_clause=""
-    if operation == "update":              # params are hostname&newApp&newGroup&newOwner
-      self.update_record(query_parms)
-    elif query_parms != "":                # there are query parameters 
+    if operation != "update" and query_parms != "": # query parameters => WHERE clause 
       where_clause = self.mk_where_clause(query_parms)
       self.log.debug(f"MariacmdbAPI.process_uri() where_clause: {where_clause}")
     match operation:
@@ -221,7 +250,7 @@ class MariacmdbAPI():
         JSONout = self.get_records(where_clause)
         print(JSONout)
       case "update":
-        pass                               # already complete 
+        self.update_record(query_parms)    # params are hostname&newApp&newGroup&newOwner
       case _:  
         print(f"unexpected: operation = {operation}")
         exit(1)    
