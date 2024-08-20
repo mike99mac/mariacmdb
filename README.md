@@ -4,21 +4,22 @@ This repository contains Python and bash code that form a simple Configuration M
 The name is a conflation of *mariadb* and *CMDB*.
 
 # Overview
+Following is a block diagram of Mariacmdb.
+![](mariacmdb.jpg) 
+
+mariacmdb block diagram
+
 There are four source files:
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
-- ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API interfaced through Apache 
+- ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API interfaced through Apache
 - ``finder.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GUI search script with a browser interface
 - ``serverinfo``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Bash script that returns data from managed servers
 
-Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed. 
+Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed.
 ``mariacmdb.py`` commands must be run by that user.
 
 Using mariadb, one database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
 
-Following is a block diagram.
-![](mariacmdb.jpg) 
-
-mariacmdb block diagram
 
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
