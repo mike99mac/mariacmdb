@@ -17,6 +17,7 @@ There are five main source files:
 | ``finder.py``  | Python | GUI search script with a browser interface |
 | ``serverinfo``  | Bash | Return data from managed servers |
 
+## Set up SSH access
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed.
 ``mariacmdb.py`` commands must be run by that user and they must have ``sudo`` access.
 
@@ -39,7 +40,11 @@ model2000
 4 of 4 SSHed
 ```
 
-Once that is set up, the Relational Database ``mariadb`` is installed. One database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
+It is here: ``https://github.com/mike99mac/mariacmdb/blob/main/usr/local/sbin/sshall``
+
+Try to set this up beforehand.
+
+Once you do, the Relational Database ``mariadb`` is installed. 
 
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
