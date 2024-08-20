@@ -1,7 +1,6 @@
 # mariacmdb
 This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
-
-The name is a conflation of *mariadb* and *CMDB*.
+*Mariacmdb* is a conflation of *mariadb* and *CMDB*.
 
 # Overview
 Following is a block diagram of Mariacmdb.
@@ -40,7 +39,7 @@ model2000
 4 of 4 SSHed
 ```
 
-It is here: ``https://github.com/mike99mac/mariacmdb/blob/main/usr/local/sbin/sshall``
+Here is ``sshall``: https://github.com/mike99mac/mariacmdb/blob/main/usr/local/sbin/sshall
 
 Try to set this up beforehand.
 
