@@ -41,14 +41,12 @@ model2000
 
 Here is ``sshall``: https://github.com/mike99mac/mariacmdb/blob/main/usr/local/sbin/sshall
 
-Try to set this up beforehand.
-
-Once you do, the Relational Database ``mariadb`` is installed. 
+Try to set this up, then the following instructions can be followed. 
 
 # Installation
-These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
+These steps set up a virtual environment under ``/srv/venv``. The python files reference this directory. 
 
-When there are differences, separate steps are given for Debian and RHEL bases Linuxes. 
+This code has been installed on Debian and RHEL bases Linuxes.  When there are differences, separate steps are given for each.
 
 To install mariacmdb, perform the following steps.
 
@@ -265,7 +263,8 @@ sudo chmod -R g+w venv
 ```
 . venv/bin/activate  
 ```
-    You should see the text ``(venv)`` prefixed on the command prompt.
+
+You should see the text ``(venv)`` prefixed on the command prompt.
 
 - Upgrade pip:
 
