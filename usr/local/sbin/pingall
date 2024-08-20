@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# pingall 
+#
+let numPinged=0
+let numGood=0
+for i in 800 1000 1500 2000 2200; do   
+  echo "pinging model$i ..."
+  pingOutput=`/bin/ping -c1 -W0.5 model$i`
+  if [ $? = 0 ]; then
+    let numGood=$numGood+1
+  fi
+  echo "$pingOutput" | grep packet
+  let numPinged=$numPinged+1
+  echo "-----------------------------------------"
+done
+echo "$numGood of $numPinged pinged"

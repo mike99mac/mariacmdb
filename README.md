@@ -9,7 +9,9 @@ Following is a block diagram of Mariacmdb.
 
 mariacmdb block diagram
 
-There are four source files:
+There are five main source files:
+
+- ``bootstable.js``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
 - ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
 - ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API interfaced through Apache
 - ``finder.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GUI search script with a browser interface
@@ -19,7 +21,6 @@ Key-based authentication, or *Passwordless* SSH access is needed for one user fr
 ``mariacmdb.py`` commands must be run by that user.
 
 Using mariadb, one database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
-
 
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.

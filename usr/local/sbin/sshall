@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# sshall 
+#
+let numSSHed=0
+let numGood=0
+#for i in 800 1000 1500 2000 2200; do   
+for i in 800 1000 1500 2000; do   
+  echo "SSHing to model$i ..."
+  ssh model$i hostname 
+  if [ $? = 0 ]; then
+    let numGood=$numGood+1
+  fi
+  let numSSHed=$numSSHed+1
+  echo "-----------------------------------------"
+done
+echo "$numGood of $numSSHed SSHed"
