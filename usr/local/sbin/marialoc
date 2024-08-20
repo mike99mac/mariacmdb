@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# marialoc - count the lines of code in the main mariacmdb source files 
+#
+python="/srv/www/mariacmdb/finder.py /srv/www/mariacmdb/restapi.py /usr/local/sbin/mariacmdb.py"
+javascript="/srv/www/mariacmdb/bootstable.js"
+bash="/usr/local/sbin/serverinfo /usr/local/sbin/testrestapi"
+css="/srv/www/mariacmdb/finder.css" 
+ 
+echo
+echo "Lines of code in mariacmdb:"
+echo
+echo "Python:"
+wc -l $python
+echo
+echo "Javascript:"
+wc -l $javascript
+echo
+echo "Bash:"
+wc -l $bash
+echo
+echo "CSS:"
+wc -l $css
+echo
+total=`wc -l $python $javascript $bash $css | tail -1`
+echo "$total"

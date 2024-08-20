@@ -28,6 +28,7 @@ http://model1500/restapi.py?hostname ...
 [ "model1000", "model1500", "model2000", "model800" ]
 """
 import base64
+import json
 import logging
 import mariadb
 import os
@@ -40,13 +41,37 @@ class MariacmdbAPI():
   def __init__(self):
     self.conn = None 
     self.cursor = None 
+    self.DBuser = "root"                   # default database user
+    self.DBpw = "pi"                       # default database password
+    self.DBhost = "127.0.0.1"              # default database host
+    self.DBname = "cmdb"        
+    self.script_dir = "/home/pi"
+    self.log_level = "debug"
+    self.load_config_file()
     logging.basicConfig(filename='/home/pi/restapi.log',
                         format='%(asctime)s %(levelname)s %(message)s',
-                        level=logging.DEBUG)
+                        level=self.log_level)
     self.log = logging.getLogger(__name__)
-    self.log.setLevel(logging.DEBUG)
+    # self.log.setLevel(logging.DEBUG)
     print("Content-Type: text/html")       # print MIME type
     print()                                # required empty line
+
+  def load_config_file(self):
+    """
+    read the JSON config file /etc/mariacmdb.conf
+    """
+    try:
+      conf_file = open("/etc/mariacmdb.conf", 'r')
+    except Exception as e:
+      self.log.error("load_config_file(): could not open configuration file /etc/mariacmdb.conf - using defaults")
+      return
+    confJSON = json.loads(conf_file.read())
+    self.DBuser = confJSON['DBuser']
+    self.DBpw = confJSON['DBpw']
+    self.DBhost = confJSON['DBhost']
+    self.DBname = confJSON['DBname']
+    self.script_dir = confJSON['homeDir']  
+    self.log_level = confJSON['logLevel']  
 
   def print_env(self):
     """
@@ -67,20 +92,20 @@ class MariacmdbAPI():
     run the SQL command passed in
     """
     self.log.info(f"MariacmdbAPI.run_sql_cmd(): cmd = {cmd}")
-    self.conn = mariadb.connect(user="root", password="pi", host="127.0.0.1", database="mysql")
+    self.conn = mariadb.connect(user=self.DBuser, password=self.DBpw, host=self.DBhost, database=self.DBname)
     self.cursor = self.conn.cursor()       # open cursor
     try:   
       self.cursor.execute("use cmdb")
     except mariadb.Error as e:
       print(f"ERROR changing database to 'cmdb': {e}")
       print("</body></html>")
-      self.conn.close()                         # cannot contiue
+      self.conn.close()                    # cannot contiue
       exit(1)
     rows = "" 
     output = ""
     self.log.info(f"MariacmdbAPI.run_sql_cmd(): running cmd: {cmd}") 
     try:   
-      self.cursor.execute(cmd)                  # query the cmdb
+      self.cursor.execute(cmd)             # query the cmdb
       rows = self.cursor.fetchall()
       rows = str(rows)                     # convert to string
       rows = rows.replace("(", "").replace(",)", "").replace("'", '"') # clean up SQL fluff

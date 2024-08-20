@@ -460,9 +460,14 @@ sudo vi /etc/mariacmdb.conf
   "DBuser": "root",
   "DBpw": "pi",
   "DBhost": "127.0.0.1",
-  "DBname": "cmdb"
+  "DBname": "cmdb",
+  "homeDir": "/home/pi",
+  "logLevel": "debug"
 }
 ```
+- The first four variables are the database user, password, host name or IP address, and the database name which will store the table ``servers``.
+- ``homeDir`` is the directory where the ``serverinfo`` script will be copied to and run from.
+- ``logLevel`` can be ``info``, ``warning`` or ``debug``.
 
 
 # Use mariacmdb
@@ -471,7 +476,7 @@ This mariacmdb solution was designed to be very easy to use.
 The following sections describe the line command, the Web interface and the RESTful API.
 
 ## The mariacmdb.py line command
-One of the following *subcommands* must be supplied to the line command:
+One of the following *subcommands* must be supplied: 
 
 - ``add       `` Add a server to be managed - if it already exists, it will be updated.  
 - ``describe  `` Show the metadata of the ``servers`` table.
