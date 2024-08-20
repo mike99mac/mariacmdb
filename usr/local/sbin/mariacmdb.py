@@ -21,7 +21,7 @@ It consists of a database named 'cmdb' with a table named 'servers' with these c
 It supports the following commands:
 - init              Creates the table 'servers' in database 'cmdb'
 - add <SERVER>      If SERVER already exists, record is updated
-- desc(ribe)        Show the format of the 'servers' database
+- desc(ribe)        Show format of the 'servers' database
 - query <PATTERN>   If no PATTERN is supllied, return all rows
 - remove <SERVER>   Remove row for specified server
 - update            Refresh entire database
@@ -58,8 +58,17 @@ class Mariacmdb:
     self.console.setFormatter(self.formatter)
     logging.getLogger('').addHandler(self.console) # add the handler to the root logger
     self.log = logging.getLogger(__name__)
+    self.DBuser = "root"                   # default database user
+    self.DBpw = "pi"                       # default database password
+    self.DBhost = "127.0.0.1"              # default database host
+    self.DBname = "cmdb"                   # default database name
+    self.log_level = "INFO"
     self.script_dir = None
+    self.load_config_file()                # read the config file                    
     self.parser = argparse.ArgumentParser(description = "mariacmdb - A simple Configuration Management Database")
+    self.log.info(f"Mariacmdb.__init__(): self.log_level: {self.log_level}")
+    self.log.setLevel(self.log_level)
+    self.console.setLevel(self.log_level)
     self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     self.parser.add_argument("-C", "--copyscript", help="copy script 'serverinfo' to target server before add", action="store_true")
     self.parser.add_argument("-c", "--column", help="column name to search", action="append")
@@ -69,11 +78,7 @@ class Mariacmdb:
     self.args = self.parser.parse_args()
     self.conn = None                       # mariadb connection
     self.cursor = None                     # mariadb cursor
-    self.DBuser = "root"                   # default database user
-    self.DBpw = "pi"                       # default database password
-    self.DBhost = "127.0.0.1"              # default database host
-    self.DBname = "cmdb"                   # default database name
-    self.log.debug(f"__init__(): self.args = {str(self.args)}")
+    self.log.debug(f"Mariacmdb.__init__(): self.args = {str(self.args)}")
     self.create_db_cmd = f"CREATE DATABASE {self.DBname};"
     self.describe_cmd = "DESC servers;"
     self.delete_cmd = "DELETE FROM servers WHERE host_name = pattern;"
@@ -90,17 +95,22 @@ class Mariacmdb:
         kern_ver VARCHAR(100),
         kern_rel VARCHAR(50),
         rootfs INT,
-        app VARCHAR(50),
-        grp VARCHAR(50),
-        owner VARCHAR(50),
         last_ping VARCHAR(50),
-        created VARCHAR(50)
+        created VARCHAR(50),  
+        app VARCHAR(50), 
+        grp VARCHAR(50), 
+        owner VARCHAR(50) 
       );
       """
-    self.replace_row_cmd = """
-      REPLACE INTO servers (
-        host_name, ip_addr, cpus, mem_gb, arch, arch_com, os, os_ver, kern_ver, kern_rel, rootfs, app, grp, owner, last_ping, created) 
+    self.insert_row_cmd = """
+      INSERT INTO servers (
+        host_name, ip_addr, cpus, mem_gb, arch, arch_com, os, os_ver, kern_ver, kern_rel, rootfs, last_ping, created, app, grp, owner) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      """
+    self.replace_row_cmd = """
+      UPDATE servers 
+      SET ip_addr = ?, cpus = ?, mem_gb = ?, arch = ?, arch_com = ?, os = ?, os_ver = ?, kern_ver = ?, kern_rel = ?, rootfs = ?, last_ping = ?, created = ?
+      WHERE host_name = ?
       """
     self.select_cmd = """
       SELECT * FROM servers WHERE host_name LIKE ptrn 
@@ -122,7 +132,6 @@ class Mariacmdb:
     self.select_host_names_cmd = "SELECT host_name FROM servers"
     self.server_data = []
     self.use_cmd = f"USE {self.DBname}" 
-    self.load_config_file()                # read the config file                    
 
   def load_config_file(self):
     """
@@ -138,6 +147,7 @@ class Mariacmdb:
     self.DBpw = confJSON['DBpw']
     self.DBhost = confJSON['DBhost']
     self.DBname = confJSON['DBname']
+    self.log_level = confJSON['logLevel']
     self.script_dir = confJSON['homeDir']
 
   def connect_to_cmdb(self):   
@@ -148,7 +158,7 @@ class Mariacmdb:
       self.conn = mariadb.connect(user=self.DBuser, password=self.DBpw, host=self.DBhost, database=self.DBname)   
       self.cursor = self.conn.cursor()       # open cursor
     except mariadb.Error as e:
-      self.log.error(f"initialize(): Exception creating database: {e}")
+      self.log.error(f"connect_to_cmdb(): Exception creating database: {e}")
       self.log.info("Run 'mariacmdb.py init'?")
       exit(3)
     
@@ -282,23 +292,33 @@ class Mariacmdb:
     self.log.debug(f"find_server(): command {ssh_cmd} returncode: {proc.returncode} stdout: {self.server_data}")
     return 0
 
-  def replace_row(self): 
+  def replace_row(self, op_type: str): 
     """
-    USE cmdb
-    INSERT a row into table 'servers' or REPLACE it if host_name is a duplicate
+    Either insert a new row or replace an existing one
+    op_type:
+    - "insert":  INSERT a row into table 'servers' - 13 columns + 3 metadata
+    - "replace": REPLACE the row - just 13 columns, no metadata
     """
-    server = self.server_data[0] 
-    self.log.debug(f"replace_row(): server_data: {self.server_data} server: {server}")
+    self.log.info(f"replace_row(): op_type: {op_type} server_data: {self.server_data}")
     self.connect_to_cmdb()
-    try: 
+    if op_type == "insert":                # need 3 metadata values
+      self.server_data.append("none")      # app
+      self.server_data.append("none")      # group
+      self.server_data.append("none")      # owner
+      cmd = self.insert_row_cmd            # SQL INSERT
+      self.log.debug(f"replace_row(): inserting row with: {self.insert_row_cmd}")
+    else:                                  # replace  
+      cmd = self.replace_row_cmd           # SQL REPLACE
       self.log.debug(f"replace_row(): replacing row with: {self.replace_row_cmd}")
-      self.cursor.execute(self.replace_row_cmd, self.server_data)  
+    self.log.debug(f"replace_row(): server_data: {self.server_data}")
+    try: 
+      self.cursor.execute(cmd, self.server_data)  
     except mariadb.Error as e:
-      self.log.error(f"replace_row() inserting row into table 'servers': {e}")
+      self.log.error(f"replace_row() e: {e}")
       self.conn.close()                         # close connection
       return 
     self.commit_changes() 
-    self.log.info(f"replace_row(): replaced row for server {server}")
+    self.log.info(f"replace_row(): replaced row for server {self.server_data[0]}")
 
   def delete_row(self):
     """
@@ -369,7 +389,7 @@ class Mariacmdb:
         if rc == 1:                        # did not get server data
           self.log.warning(f"update_cmdb(): did not get server_data for {next_server} - skipping")
           continue                         # iterate loop
-        self.replace_row()
+        self.replace_row("update")
         successes += 1                     # increment counter
       self.log.info("update_cmdb() successfully updated table 'servers'")  
     except mariadb.Error as e:
@@ -401,7 +421,7 @@ class Mariacmdb:
           if rc != 0:
             self.log.error(f"run_command(): find_server() returned {rc}")
           else:  
-            rc = self.replace_row()
+            rc = self.replace_row("insert")
       case "describe"|"desc":
         rc = self.describe_table() 
       case "remove":

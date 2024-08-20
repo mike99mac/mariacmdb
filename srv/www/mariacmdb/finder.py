@@ -9,7 +9,7 @@ class Finder:
     """
     self.pattern = ""                      # search pattern
     self.rows = []                         # resulting rows
-    self.headers = ['Host name', 'IP address', 'CPUs', 'GB Mem', 'Arch', 'Common arch', 'OS', 'OS ver', 'Kernel ver', 'Kernel rel', 'RootFS % full', 'App', 'Group', 'Owner', 'Last cang', 'Created']
+    self.headers = ['Host name', 'IP address', 'CPUs', 'GB Mem', 'Arch', 'Common arch', 'OS', 'OS ver', 'Kernel ver', 'Kernel rel', 'RootFS % full', 'Last ping', 'Created', 'App', 'Group', 'Owner']
 
     # start the HTML page
     print('Content-Type: text/html')
@@ -138,7 +138,7 @@ class Finder:
 
     # make the table editable
     print('<script>')
-    print('$("#server-table").SetEditable({columnsEd: "11,12,13", onEdit:function(){}})')
+    print('$("#server-table").SetEditable({columnsEd: "13,14,15", onEdit:function(){}})')
     print('</script>')
     print('</body></html>')                # end page
 

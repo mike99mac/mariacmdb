@@ -87,36 +87,48 @@ class MariacmdbAPI():
     print("</pre>")
     print("")
 
-  def run_sql_cmd(self, cmd: str) -> str:
+  def connect_to_cmdb(self):
+    """
+    Connect to mariadb, use datase cmdb and establish a cursor
+    """
+    try:
+      self.conn = mariadb.connect(user=self.DBuser, password=self.DBpw, host=self.DBhost, database=self.DBname)
+      self.cursor = self.conn.cursor()       # open cursor
+    except mariadb.Error as e:
+      self.log.error(f"initialize(): Exception creating database: {e}")
+      self.log.info("Run 'mariacmdb.py init'?")
+      exit(3)
+
+
+  def run_sql_query(self, cmd: str) -> str:
     """
     run the SQL command passed in
     """
-    self.log.info(f"MariacmdbAPI.run_sql_cmd(): cmd = {cmd}")
-    self.conn = mariadb.connect(user=self.DBuser, password=self.DBpw, host=self.DBhost, database=self.DBname)
-    self.cursor = self.conn.cursor()       # open cursor
+    self.log.info(f"MariacmdbAPI.run_sql_query(): cmd = {cmd}")
+    self.connect_to_cmdb()                 # connect to DB
     try:   
-      self.cursor.execute("use cmdb")
+      self.cursor.execute(f"use {self.DBname}")
     except mariadb.Error as e:
-      print(f"ERROR changing database to 'cmdb': {e}")
+      print(f"ERROR changing database to {self.DBname}: {e}")
       print("</body></html>")
       self.conn.close()                    # cannot contiue
       exit(1)
     rows = "" 
     output = ""
-    self.log.info(f"MariacmdbAPI.run_sql_cmd(): running cmd: {cmd}") 
+    self.log.info(f"MariacmdbAPI.run_sql_query(): running cmd: {cmd}") 
     try:   
       self.cursor.execute(cmd)             # query the cmdb
       rows = self.cursor.fetchall()
       rows = str(rows)                     # convert to string
       rows = rows.replace("(", "").replace(",)", "").replace("'", '"') # clean up SQL fluff
       rows = rows.replace("[", "").replace("]", "")
-      self.log.info(f"MariacmdbAPI.run_sql_cmd(): rows = {rows} type(rows) = {type(rows)}") 
+      self.log.info(f"MariacmdbAPI.run_sql_query(): rows = {rows} type(rows) = {type(rows)}") 
       if rows == []:                       # no match
-        self.log.info(f"MariacmdbAPI.run_sql_cmd(): no matching rows") 
+        self.log.info(f"MariacmdbAPI.run_sql_query(): no matching rows") 
       else:  
         output = rows
     except mariadb.Error as e:
-      self.log.error(f"MariacmdbAPI.run_sql_cmd(): ERROR! e: {e}")  
+      self.log.error(f"MariacmdbAPI.run_sql_query(): ERROR! e: {e}")  
     return output  
 
   def close_conn(self):
@@ -147,7 +159,7 @@ class MariacmdbAPI():
     ping specified servers and return how many servers ping out of how many found 
     """
     sql_cmd = f"SELECT host_name FROM servers {where_clause}"
-    sql_out = self.run_sql_cmd(sql_cmd)    # list of server host names
+    sql_out = self.run_sql_query(sql_cmd)    # list of server host names
     self.close_conn()
     self.log.info(f"MariacmdbAPI.ping_servers(): sql_out = {sql_out} type(sql_out) = {type(sql_out)}")
     up_servers = 0
@@ -201,7 +213,7 @@ class MariacmdbAPI():
     """
     sql_cmd = f"SELECT COUNT(host_name) FROM servers {where_clause}"
     self.log.debug(f"MariacmdbAPI.count_servers(): sql_cmd: {sql_cmd}")
-    sql_out = self.run_sql_cmd(sql_cmd)
+    sql_out = self.run_sql_query(sql_cmd)
     self.close_conn()
     sql_out = str(sql_out).replace("[", "").replace("]", "")
     if not sql_out:                    # no hits
@@ -215,7 +227,7 @@ class MariacmdbAPI():
     """
     sql_cmd = f"SELECT host_name FROM servers {where_clause}"
     self.log.debug(f"MariacmdbAPI.get_host_names(): hostname sql_cmd = {sql_cmd}")
-    return self.run_sql_cmd(sql_cmd) 
+    return self.run_sql_query(sql_cmd) 
     self.close_conn()
     print(str(sql_out))    
 
@@ -226,7 +238,7 @@ class MariacmdbAPI():
     """
     sql_cmd = f"SELECT * FROM servers {where_clause}"
     self.log.debug(f"MariacmdbAPI.get_records(): query sql_cmd = {sql_cmd}")
-    sql_out = self.run_sql_cmd(sql_cmd) 
+    sql_out = self.run_sql_query(sql_cmd) 
     self.close_conn()
     return '{"servers": '+'"'+str(sql_out)+'"}'  
 
@@ -242,12 +254,14 @@ class MariacmdbAPI():
     if list_len != 4:                       # error
       self.log.error(f"MariacmdbAPI.update_record(): len(query_str): {list_len}, expected 4") 
       return
-    sql_cmd = f"UPDATE servers SET app = '{query_str[1]}', grp = '{query_str[2]}', owner = '{query_str[3]}' WHERE host_name = '{query_str[0]}'"
-    sql_out = self.run_sql_cmd(sql_cmd)    # update 3 columns
-    self.log.info(f"MariacmdbAPI.update_record(): sql_out = {sql_out} type(sql_out) = {type(sql_out)}")
-    self.conn.commit()                     # commit the changes
-    self.close_conn()
-   
+    cmd = f"UPDATE servers SET app = '{query_str[1]}', grp = '{query_str[2]}', owner = '{query_str[3]}' WHERE host_name = '{query_str[0]}'"
+    self.connect_to_cmdb()                 # connect to DB
+    try:   
+      self.cursor.execute(cmd)             # run SQL command 
+    except mariadb.Error as e:
+      self.log.error(f"MariacmdbAPI.run_sql_query(): e: {e}")  
+    self.conn.commit()                     # commit changes
+    self.close_conn()                      # close connection
    
   def process_uri(self):
     """
