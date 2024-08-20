@@ -10,12 +10,13 @@ Following is a block diagram of Mariacmdb.
 mariacmdb block diagram
 
 There are five main source files:
-
-- ``bootstable.js``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
-- ``mariacmdb.py``&nbsp;&nbsp;&nbsp;&nbsp; Line command that maintains the database
-- ``restapi.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RESTful API interfaced through Apache
-- ``finder.py``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GUI search script with a browser interface
-- ``serverinfo``&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Bash script that returns data from managed servers
+| File | Language | Description |
+| ---- | -------- | ----------- |
+| ``bootstable.js`` | Javascript | Line command that maintains the database |
+| ``mariacmdb.py``  | Python | Line command that maintains the database |
+| ``restapi.py``  | Python | RESTful API interfaced through Apache |
+| ``finder.py``  | Python | GUI search script with a browser interface |
+| ``serverinfo``  | Bash | Return data from managed servers |
 
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed.
 ``mariacmdb.py`` commands must be run by that user.
