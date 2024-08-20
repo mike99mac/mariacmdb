@@ -6,8 +6,7 @@ The name is a conflation of *mariadb* and *CMDB*.
 # Overview
 Following is a block diagram of Mariacmdb.
 ![](mariacmdb.jpg) 
-
-mariacmdb block diagram
+Mariacmdb block diagram
 
 There are five main source files:
 | File | Language | Description |
@@ -21,7 +20,26 @@ There are five main source files:
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed.
 ``mariacmdb.py`` commands must be run by that user.
 
-Using mariadb, one database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
+Following is an example of a script that SSH's to each managed server and runs the ``hostname`` command:
+
+```
+$ sshall
+SSHing to model800 ...
+model800
+-----------------------------------------
+SSHing to model1000 ...
+model1000
+-----------------------------------------
+SSHing to model1500 ...
+model1500
+-----------------------------------------
+SSHing to model2000 ...
+model2000
+-----------------------------------------
+4 of 4 SSHed
+```
+
+Once that is set up, the Relational Database ``mariadb`` is installed. One database named ``cmdb`` is created, and one table named ``servers`` is created in that database.
 
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. This is crucial to the code functioning.
