@@ -5,7 +5,7 @@ This repository contains Python and bash code that form a simple Configuration M
 # Overview
 Following is a block diagram of Mariacmdb.
 ![](mariacmdb.jpg) 
-Mariacmdb block diagram
+**Mariacmdb block diagram**
 
 There are five main source files:
 | File | Language | Description |
@@ -583,12 +583,19 @@ __main__    : INFO     replace_row(): replaced row for server model800
 __main__    : INFO     update_cmdb() successfully updated table 'servers'
 ```
  
-## The Web interface
-Following is a block diagram of Mariacmdb.
+## Web interface
+Following is a screen shot of the browser interface.
 
 ![](finderScreenShot.png)
-Finder browser interface
+**Finder browser interface**
 
+Hopefully all is intuitive.  There is one search field that will search on any column. Click the ``Submit`` button and a search will be performed, returning all matching servers.
+
+There is an ``Update all servers`` button. This will go out to all managed servers and update the values in real time. It will update the ``Last ping`` column. 
+
+**TODO**: could last ping times be colored in red if they don't ping?
+
+**TODO**: add another screen show showing inline editing mode.
 
 ## RESTful API
 Following is an example of using the RESTful API to search for servers that have 4 CPUs and 4GB of memory.  Three of the four servers do.
