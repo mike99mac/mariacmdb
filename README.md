@@ -584,7 +584,11 @@ __main__    : INFO     update_cmdb() successfully updated table 'servers'
 ```
  
 ## The Web interface
-TODO: write this section 
+Following is a block diagram of Mariacmdb.
+
+![](finderScreenShot.png)
+Finder browser interface
+
 
 ## RESTful API
 Following is an example of using the RESTful API to search for servers that have 4 CPUs and 4GB of memory.  Three of the four servers do.
