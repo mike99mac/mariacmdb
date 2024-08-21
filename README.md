@@ -458,7 +458,7 @@ There is a sample configuration file named ``mariacmdb.conf`` in the repo.  The 
 sudo cp ~/mariacmdb/mariacmdb.conf /etc
 ```
 
-- Modify the values if desired. The root password must be set later in mariadb.
+- Modify the values if desired. Set the root password to the value used earlier in mariadb.
 
 ```
 sudo vi /etc/mariacmdb.conf
