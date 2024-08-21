@@ -2,10 +2,11 @@
 This repository contains code to create a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data. The name *Mariacmdb* is a conflation of *mariadb* and *CMDB*.
 
 It consists of:
-- A relational database with data of managed servers.
+- A relational database with data of managed servers
 - A Linux line command
 - A Web browser interface
-- A RESTful API
+- A RESTful API - for example: ``curl "http://model1500/restapi.py?update&model1500&Oracle&Dev&Joe"``
+
 
 # Overview
 Following is a block diagram of Mariacmdb.
@@ -23,7 +24,7 @@ There are five main source files:
 | ``finder.py``  | Python | GUI search script with a browser interface |
 | ``serverinfo``  | Bash | Return data from managed servers |
 
-
+Following are the number of lines in the main source files:
 ```
  Python:
   148 /srv/www/mariacmdb/finder.py
