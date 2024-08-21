@@ -5,7 +5,7 @@ This repository contains code to create a simple Configuration Management Databa
 
 # Overview
 Following is a block diagram of Mariacmdb.
-![](mariacmdb.jpg) 
+![](mariacmdb-block-diagram.png) 
 **Mariacmdb block diagram**
 
 There are five main source files:
@@ -586,7 +586,7 @@ __main__    : INFO     update_cmdb() successfully updated table 'servers'
 ```
  
 ## Web interface
-Following is a screen shot of the browser interface.
+Following is a screen shot of the browser interface:
 
 ![](finderScreenShot.png)
 **Finder browser interface**
@@ -595,7 +595,7 @@ Hopefully all is intuitive.  There is one search field that will search on any c
 
 There is an ``Update all servers`` button. This will go out to all managed servers and update the values in real time. It will update the ``Last ping`` column. 
 
-On the right side of each row, there is a pencil icon. Click that to go into edit mode for the three metadata columns: ``app``, ``group`` and ``owner``.  Modify the data and click the check mark to save, or the X to discard changes.  This is shown in the following figure
+On the right side of each row, there is a pencil icon. Click that to go into edit mode for the three metadata columns: ``app``, ``group`` and ``owner``.  Modify the data and click the check mark to save, or the X to discard changes.  This is shown in the following figure:
 
 ![](FinderEditMode.png)
 **Finder in edit mode**
