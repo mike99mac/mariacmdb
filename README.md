@@ -1,5 +1,6 @@
 # mariacmdb
-This repository contains Python and bash code that form a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
+This repository contains code to create a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
+
 *Mariacmdb* is a conflation of *mariadb* and *CMDB*.
 
 # Overview
@@ -516,17 +517,15 @@ options:
 ## Creating a database
 To create and populate a new database, perform the following steps:
 
-- Create a database:
+- Create a database with the ``init`` subcommand.  This should create a database and a table in mariacmdb.
 
 ``` 
 $ mariacmdb.py init
 ```
 
-- Use the ``describe`` subcommand to list the attributes of the ``servers`` table: 
+- Check that the database was created. Use the ``desc`` subcommand to list the attributes of the ``servers`` table: 
 
 ```
-mariacmdb.py describe 
-Table servers:
 Field,Type,Null,Key,Default,Extra
 ---------------------------------
 host_name,varchar(255),NO,PRI,None,
@@ -537,13 +536,14 @@ arch,varchar(50),YES,,None,
 arch_com,varchar(50),YES,,None,
 os,varchar(100),YES,,None,
 os_ver,varchar(50),YES,,None,
-kernel,varchar(100),YES,,None,
+kern_ver,varchar(100),YES,,None,
+kern_rel,varchar(50),YES,,None,
 rootfs,int(11),YES,,None,
+last_ping,varchar(50),YES,,None,
+created,varchar(50),YES,,None,
 app,varchar(50),YES,,None,
 grp,varchar(50),YES,,None,
 owner,varchar(50),YES,,None,
-last_ping,timestamp,NO,,current_timestamp(),
-created_at,timestamp,NO,,current_timestamp(),
 ```
 
 - Use the ``add`` subcommand to insert rows into the database.  
