@@ -2,14 +2,6 @@
 #
 # serverinfo - return hostname, IP addr, num CPUs, GB of memory, architecture, OS, OS version, kernel level 
 #
-# if any arg is passed, give help
-if [ $# != 0 ]; then                       # arg passed
-  echo "Name:  serverinfo - return hostname, IP addr, num CPUs, GB of memory, etc." 
-  echo "Usage: serverinfo"
-  exit 1
-fi
-
-# gather info
 hostName=`hostname -s`
 IPaddr=`ip route get 8.8.8.8 | sed -n '/src/{s/.*src *\([^ ]*\).*/\1/p;q}'`
 if [ ${#IPaddr} = 0 ]; then                # empty var
@@ -39,28 +31,9 @@ case $arch in
     arch_com="unknown"    
     ;;
 esac
-
-# get application, group, owner, creation data and last pinged if the data exists in /etc/
-cd /etc
-if [ -s app ]; then                         # file exists and is not empty
-  app=`cat app`
-else
-  app="unknown"
-fi
-if [ -s grp ]; then  
-  grp=`cat grp`
-else
-  grp="unknown"
-fi
-if [ -s owner ]; then 
-  owner=`cat owner`
-else
-  owner="unknown"
-fi
 last_ping=`date +"%y-%m-%d %H:%M:%S"`       # consider an ssh a ping
-if [ -s created ]; then 
-  created=`cat created`
-else
+created=`stat / | grep "Birth" | sed 's/Birth: //g' | cut -b 2-11`
+if [ ${#created} = 0 ]; then                # date not found
   created="unknown"
 fi
 os=`uname -s`                               # kernel name
@@ -71,4 +44,5 @@ fi
 kern_ver=`uname -v | sed -e 's/PREEMPT_DYNAMIC //g' -e 's/PREEMPT //g'` 
 kern_rel=`uname -r`                          
 rootfsFull=`df -h / | tail -1 | awk '{print $5}' | sed 's/%//g'`
-echo -n "$hostName,$IPaddr,$numCPUs,$memGB,$arch,$arch_com,$os,$distro,$kern_ver,$kern_rel,$rootfsFull,$app,$grp,$owner,$last_ping,$created"
+echo -n "$IPaddr,$numCPUs,$memGB,$arch,$arch_com,$os,$distro,$kern_ver,$kern_rel,$rootfsFull,$last_ping,$created,$hostName"
+

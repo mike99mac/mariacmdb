@@ -42,7 +42,7 @@ model2000
 
 Here is ``sshall``: https://github.com/mike99mac/mariacmdb/blob/main/usr/local/sbin/sshall
 
-Try to set this up, then the following instructions can be followed. 
+Try to set this up first, then the following instructions can be followed. 
 
 # Installation
 These steps set up a virtual environment under ``/srv/venv``. The python files reference this directory. 
