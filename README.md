@@ -12,6 +12,8 @@ Following is a block diagram of Mariacmdb.
 ![](mariacmdb-block-diagram.png) 
 **Mariacmdb block diagram**
 
+## Source files
+
 There are five main source files:
 | File | Language | Description |
 | ---- | -------- | ----------- |
@@ -20,6 +22,28 @@ There are five main source files:
 | ``restapi.py``  | Python | RESTful API interfaced through Apache |
 | ``finder.py``  | Python | GUI search script with a browser interface |
 | ``serverinfo``  | Bash | Return data from managed servers |
+
+
+```
+ Python:
+  148 /srv/www/mariacmdb/finder.py
+  300 /srv/www/mariacmdb/restapi.py
+  443 /usr/local/sbin/mariacmdb.py
+  891 total
+
+ Javascript:
+  158 /srv/www/mariacmdb/bootstable.js
+
+ Bash:
+   77 /usr/local/sbin/serverinfo
+   27 /usr/local/sbin/testrestapi
+  104 total
+
+ CSS:
+  29 /srv/www/mariacmdb/finder.css
+----
+1182 total
+```
 
 ## Set up SSH access
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed.
