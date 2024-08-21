@@ -597,7 +597,7 @@ There is an ``Update all servers`` button. This will go out to all managed serve
 
 On the right side of each row, there is a pencil icon. Click that to go into edit mode for the three metadata columns: ``app``, ``group`` and ``owner``.  Modify the data and click the check mark to save, or the X to discard changes.  This is shown in the following figure
 
-![](finderScreenShot.png)
+![](FinderEditMode.png)
 **Finder in edit mode**
 
 
