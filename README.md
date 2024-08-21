@@ -513,9 +513,13 @@ options:
 
 - Use the ``init`` subcommand to create the ``servers`` table:
 
+## Creating a database
+To create and populate a new database, perform the following steps:
+
+- Create a database:
+
 ``` 
 $ mariacmdb.py init
-Created database 'servers'
 ```
 
 - Use the ``describe`` subcommand to list the attributes of the ``servers`` table: 
