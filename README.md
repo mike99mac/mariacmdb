@@ -1,11 +1,11 @@
 # mariacmdb
 This repository contains code to create a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data. The name *Mariacmdb* is a conflation of *mariadb* and *CMDB*.
 
-It consists of:
+It consists of four main components:
 - A relational database with data of managed servers
 - A Linux line command
 - A Web browser interface
-- A RESTful API - for example: ``curl "http://model1500/restapi.py?update&model1500&Oracle&Dev&Joe"``
+- A RESTful API - for example: ``curl "http://model1500/restapi.py?update&model1000&Oracle&Dev&Joe"``
 
 
 # Overview
@@ -36,14 +36,14 @@ Following are the number of lines in the main source files:
   158 /srv/www/mariacmdb/bootstable.js
 
  Bash:
-   77 /usr/local/sbin/serverinfo
+   48 /usr/local/sbin/serverinfo
    27 /usr/local/sbin/testrestapi
-  104 total
+   75 total
 
  CSS:
-  29 /srv/www/mariacmdb/finder.css
-----
-1182 total
+   29 /srv/www/mariacmdb/finder.css
+ ----
+ 1153 total
 ```
 
 ## Set up SSH access
