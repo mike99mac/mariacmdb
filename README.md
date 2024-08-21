@@ -297,7 +297,7 @@ git clone https://github.com/mike99mac/mariacmdb
 sudo cp $HOME/mariacmdb/usr/local/sbin/mariacmdb.py /usr/local/sbin
 ```
 
-- Copy the CGI files to a new directory ``/srv/www/maraicmdb/``. 
+- Copy all CGI files to a new directory ``/srv/www/maraicmdb/``. 
 
 ```
 sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
@@ -424,7 +424,7 @@ Restart=on-abort
 WantedBy=multi-user.target
 ```
 
-- Set Apache to start at boot time and now.
+- Set Apache to start at boot time and start it in the current environment. 
 
   - For Debian-based:
 
@@ -447,6 +447,8 @@ WantedBy=multi-user.target
     ```
 
 ## Create a configuration file
+The mariacmdb configuration file allows you to set local values such as the database credentials, the home directory and the logging level.
+
 There is a sample configuration file named ``mariacmdb.conf`` in the repo.  The code expects it to be in ``/etc/``.
 
 - Copy it to ``/etc/``:
@@ -470,16 +472,14 @@ sudo vi /etc/mariacmdb.conf
 ```
 - The first four variables are the database user, password, host name or IP address, and the database name which will store the table ``servers``.
 - ``homeDir`` is the directory where the ``serverinfo`` script will be copied to and run from.
-- ``logLevel`` can be ``info``, ``warning`` or ``debug``.
+- ``logLevel``, in order of severity, are ``DEBUG``, ``INFO``, ``WARNING``, ``ERROR`` and ``CRITICAL``.
 
 
-# Use mariacmdb
-This mariacmdb solution was designed to be very easy to use.
-
+# Using mariacmdb
 The following sections describe the line command, the Web interface and the RESTful API.
 
 ## The mariacmdb.py line command
-One of the following *subcommands* must be supplied: 
+The ``mariacmdb.py`` line command must include one *subcommand*: 
 
 - ``add       `` Add a server to be managed - if it already exists, it will be updated.  
 - ``describe  `` Show the metadata of the ``servers`` table.
