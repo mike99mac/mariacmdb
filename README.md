@@ -1,7 +1,11 @@
 # mariacmdb
-This repository contains code to create a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data.
+This repository contains code to create a simple Configuration Management Database (CMDB). It uses the *mariadb* relational database to store the data. The name *Mariacmdb* is a conflation of *mariadb* and *CMDB*.
 
-*Mariacmdb* is a conflation of *mariadb* and *CMDB*.
+It consists of:
+- A relational database with data of managed servers.
+- A Linux line command
+- A Web browser interface
+- A RESTful API
 
 # Overview
 Following is a block diagram of Mariacmdb.
