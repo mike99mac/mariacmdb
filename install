@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# install - install mariacmdb 
+#
+function runCommand
+ {
+  cmd="$@"
+  echo "Running command: $cmd"
+  eval $cmd
+  rc=$?
+  if [ "$rc" != 0 ]; then
+    echo "ERROR: command $cmd returned $rc"
+    exit 1
+  fi
+ }                                         # runCommand()
+
+function checkDir
+ {
+  if [ ! -d $mariacmdbDir ]; then
+    echo "ERROR: directory $mariacmdbDir not found"
+    exit 1
+  fi
+ }                                         # checkDir()
+  
+# main()
+mariacmdbDir="$HOME/mariacmdb"             # must be cloned to home directory
+checkDir                                   # check that it is
+runCommand sudo cp $mariacmdbDir/usr/local/sbin/mariacmdb.py /usr/local/sbin
+runCommand sudo cp $mariacmdbDir/usr/local/sbin/testrestapi /usr/local/sbin
+runCommand sudo cp $mariacmdbDir/usr/local/sbin/serverinfo $HOME              
+runCommand sudo cp $mariacmdbDir/srv/www/mariacmdb/* /srv/www/mariacmdb
+
