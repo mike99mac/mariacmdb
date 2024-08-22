@@ -320,26 +320,13 @@ cd;
 git clone https://github.com/mike99mac/mariacmdb
 ```
 
-- Copy the line command to ``/usr/local/sbin``
-
-
-```
-sudo cp $HOME/mariacmdb/usr/local/sbin/mariacmdb.py /usr/local/sbin
-```
-
-- Copy all CGI files to a new directory ``/srv/www/maraicmdb/``. 
+- Run the ``install`` script. It copies files to ``/usr/local/sbin``, ``/srv/www/mariacmdb`` and your home directory.
 
 ```
-sudo cp -a ~/mariacmdb/srv/www/mariacmdb /srv/www
+./mariacmdb/install
 ```
 
-- Copy the ``serverinfo`` script to your home directory.  When the ``-C`` flag is included on ``mariacmdb.py add`` command, it will first copy the script to the managed server before running it remotely.
-
-```
-cp ~/mariacmdb/usr/local/sbin/serverinfo $HOME 
-```
-
-- Following is an Apache configuration file for a Debian-based Linux:
+- For reference, following is an Apache configuration file for a **Debian-based Linux**:
 
 ```
 # cat /etc/apache2/sites-available/mariacmdb.conf
@@ -376,7 +363,7 @@ Group pi
 </VirtualHost>
 ```
 
-- Following is an Apache configuration file for a RHEL-based Linux: 
+- Following is an Apache configuration file for a **RHEL-based Linux**: 
 
 ```
 # cat /etc/httpd/conf/httpd.conf

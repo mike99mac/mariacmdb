@@ -14,17 +14,26 @@ function runCommand
   fi
  }                                         # runCommand()
 
-function checkDir
+function checkRepoDir
  {
   if [ ! -d $mariacmdbDir ]; then
     echo "ERROR: directory $mariacmdbDir not found"
     exit 1
   fi
+ }                                         # checkRepoDir()
+  
+function checkCGIdir
+ {
+  if [ ! -d $CGIdir ]; then
+    runCommand sudo mkdir /srv/www/mariacmdb
+  fi
  }                                         # checkDir()
   
 # main()
 mariacmdbDir="$HOME/mariacmdb"             # must be cloned to home directory
-checkDir                                   # check that it is
+CGIdir="/srv/www/mariacmdb"                # must exist
+checkRepoDir                               # check the repo is in the home directory
+checkCGIdir                                # check for /srv/www/mariacmdb
 runCommand sudo cp $mariacmdbDir/usr/local/sbin/mariacmdb.py /usr/local/sbin
 runCommand sudo cp $mariacmdbDir/usr/local/sbin/testrestapi /usr/local/sbin
 runCommand sudo cp $mariacmdbDir/usr/local/sbin/serverinfo $HOME              
