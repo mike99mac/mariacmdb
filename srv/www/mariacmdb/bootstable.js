@@ -119,9 +119,7 @@ function butRowAcep(but) {                 // have any columns been changed
   var fields = "&"+hostName                // host name is first param 
   iterateColumns($cols, function($td) { 
     var value = $td.find('input').val();   // read content of input
-    // console.log("value: ", value);
     var safeValue = encodeURIComponent(value) // uu-encode so URL is safe 
-    // console.log("safeValue: ", safeValue);
     $td.html(value);                       // replace new content and remove controls
     fields = fields+'&'+safeValue;         // append safe value with a preceding '&'
     });
@@ -158,4 +156,3 @@ function butRowEdit(but) {                 // editing row
   });
   SetButtonsEdit(but);
 }
-
