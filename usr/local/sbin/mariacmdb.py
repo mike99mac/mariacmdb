@@ -66,13 +66,13 @@ class Mariacmdb:
     self.script_dir = None
     self.load_config_file()                # read the config file                    
     self.parser = argparse.ArgumentParser(description = "mariacmdb - A simple Configuration Management Database")
-    self.log.info(f"Mariacmdb.__init__(): self.log_level: {self.log_level}")
     self.log.setLevel(self.log_level)
     self.console.setLevel(self.log_level)
     self.parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    self.parser.add_argument("-V", "--version", help="show current version", action="store_true")
     self.parser.add_argument("-C", "--copyscript", help="copy script 'serverinfo' to target server before add", action="store_true")
     self.parser.add_argument("-c", "--column", help="column name to search", action="append")
-    self.parser.add_argument("subcommand", help="Can be 'add', 'describe', 'init', 'query', 'remove' or 'update'")
+    self.parser.add_argument("subcommand", help="Can be 'add', 'describe', 'init', 'query', 'remove' or 'update'", nargs='?')
     self.parser.add_argument("-p", "--pattern", help="pattern to search for", action="append")
     self.parser.add_argument("-s", "--server", help="server to add or remove", action="append")
     self.args = self.parser.parse_args()
@@ -132,6 +132,7 @@ class Mariacmdb:
     self.select_host_names_cmd = "SELECT host_name FROM servers"
     self.server_data = []
     self.use_cmd = f"USE {self.DBname}" 
+    self.version = "24.08.21"
 
   def load_config_file(self):
     """
@@ -403,6 +404,9 @@ class Mariacmdb:
     Run the command passed in
     """
     rc = 0                                 # assume success
+    if self.args.version:                  # set log level to DEBUG for log file and stdout
+      print(self.version)
+      return 
     if self.args.verbose:                  # set log level to DEBUG for log file and stdout
       self.log.setLevel(logging.DEBUG)
       self.console.setLevel(logging.DEBUG)

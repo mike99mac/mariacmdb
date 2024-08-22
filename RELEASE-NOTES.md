@@ -3,6 +3,12 @@ Following are the release notes of this ``mariacmdb`` repository.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 24.08.21
+- Added inline editing of 3 metadata columns in ``finder.py``
+- Added an **Update all servers** button in finder
+- Added update operation to ``restapi.py``
+- In ``mariacmdb.py`` add function uses ``INSERT`` and update uses ``UPDATE`` rather than both using ``REPLACE``
+
 ### Version 24.07.02
 - Add columns ``arch_com, app, grp, owner, last_ping`` to table ``servers``
 - Update ``serverinfo`` to return values for new columns
