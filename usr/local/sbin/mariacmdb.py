@@ -104,10 +104,10 @@ class Mariacmdb:
       """
     self.insert_row_cmd = """
       INSERT INTO servers (
-        host_name, ip_addr, cpus, mem_gb, arch, arch_com, os, os_ver, kern_ver, kern_rel, rootfs, last_ping, created, app, grp, owner) 
+        ip_addr, cpus, mem_gb, arch, arch_com, os, os_ver, kern_ver, kern_rel, rootfs, last_ping, created, app, grp, owner, host_name) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       """
-    self.replace_row_cmd = """
+    self.update_row_cmd = """
       UPDATE servers 
       SET ip_addr = ?, cpus = ?, mem_gb = ?, arch = ?, arch_com = ?, os = ?, os_ver = ?, kern_ver = ?, kern_rel = ?, rootfs = ?, last_ping = ?, created = ?
       WHERE host_name = ?
@@ -293,33 +293,33 @@ class Mariacmdb:
     self.log.debug(f"find_server(): command {ssh_cmd} returncode: {proc.returncode} stdout: {self.server_data}")
     return 0
 
-  def replace_row(self, op_type: str): 
+  def update_row(self, op_type: str): 
     """
-    Either insert a new row or replace an existing one
+    Either insert a new row or update an existing one
     op_type:
     - "insert":  INSERT a row into table 'servers' - 13 columns + 3 metadata
     - "replace": REPLACE the row - just 13 columns, no metadata
     """
-    self.log.info(f"replace_row(): op_type: {op_type} server_data: {self.server_data}")
+    self.log.info(f"update_row(): op_type: {op_type} server_data: {self.server_data}")
     self.connect_to_cmdb()
     if op_type == "insert":                # need 3 metadata values
       self.server_data.append("none")      # app
       self.server_data.append("none")      # group
       self.server_data.append("none")      # owner
       cmd = self.insert_row_cmd            # SQL INSERT
-      self.log.debug(f"replace_row(): inserting row with: {self.insert_row_cmd}")
+      self.log.debug(f"update_row(): inserting row with: {self.insert_row_cmd}")
     else:                                  # replace  
-      cmd = self.replace_row_cmd           # SQL REPLACE
-      self.log.debug(f"replace_row(): replacing row with: {self.replace_row_cmd}")
-    self.log.debug(f"replace_row(): server_data: {self.server_data}")
+      cmd = self.update_row_cmd            # SQL UPDATE
+      self.log.debug(f"update_row(): replacing row with: {self.update_row_cmd}")
+    self.log.debug(f"update_row(): server_data: {self.server_data}")
     try: 
       self.cursor.execute(cmd, self.server_data)  
     except mariadb.Error as e:
-      self.log.error(f"replace_row() e: {e}")
+      self.log.error(f"update_row() e: {e}")
       self.conn.close()                         # close connection
       return 
     self.commit_changes() 
-    self.log.info(f"replace_row(): replaced row for server {self.server_data[0]}")
+    self.log.info(f"update_row(): replaced row for server {self.server_data[0]}")
 
   def delete_row(self):
     """
@@ -390,7 +390,7 @@ class Mariacmdb:
         if rc == 1:                        # did not get server data
           self.log.warning(f"update_cmdb(): did not get server_data for {next_server} - skipping")
           continue                         # iterate loop
-        self.replace_row("update")
+        self.update_row("update")
         successes += 1                     # increment counter
       self.log.info("update_cmdb() successfully updated table 'servers'")  
     except mariadb.Error as e:
@@ -425,7 +425,7 @@ class Mariacmdb:
           if rc != 0:
             self.log.error(f"run_command(): find_server() returned {rc}")
           else:  
-            rc = self.replace_row("insert")
+            rc = self.update_row("insert")
       case "describe"|"desc":
         rc = self.describe_table() 
       case "remove":
