@@ -34,7 +34,6 @@ import mariadb
 import os
 import re
 import subprocess
-import sys
 from urllib.parse import urlparse, parse_qs
 
 class MariacmdbAPI():
