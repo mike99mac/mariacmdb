@@ -1,0 +1,94 @@
+#!/bin/bash
+#
+# testvif - test many vif 
+#
+#+--------------------------------------------------------------------------+
+function oneTest
+# Run one vif test 
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+ 
+  local args="$@"
+  let tests=$tests+1
+  #echo "Running: vif $args ..."
+  vif $args
+  rc=$?
+  if [ "$rc" = 0 ]; then
+    let successes=$successes+1
+  else
+    echo "ERROR: vif returned $rc"
+  fi 
+ }                                         # oneTest()
+
+#+--------------------------------------------------------------------------+
+function allTests
+# Run all vif tests
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  oneTest help
+  oneTest help all 
+  oneTest help hypervisor
+  oneTest help image
+  oneTest help partition
+  oneTest help query
+  oneTest hypervisor collect
+  oneTest hypervisor echo
+  oneTest hypervisor errors
+  oneTest hypervisor export
+  oneTest hypervisor help
+  oneTest hypervisor import
+  oneTest hypervisor restart
+  oneTest hypervisor service
+  oneTest hypervisor shutdown
+  oneTest hypervisor verify
+  oneTest hypervisor volume
+  oneTest image create linux1
+  oneTest image delete linux1
+  oneTest image help
+  oneTest image network linux1 add 360 
+  oneTest image set linux1 storage 8
+  oneTest image set linux1 cpus 4
+  oneTest image start linux1
+  oneTest image stop linux1
+  oneTest image stopall
+  oneTest partition copy linux1 150 linux2 150
+  oneTest partition copy linux1 150 to linux2 150
+  oneTest partition create linux1 150 2G
+  oneTest partition delete linux1 150
+  oneTest partition help
+  oneTest partition share linux1 151 linux2 151
+  oneTest partition share linux1 151 with linux2 151
+  oneTest query active
+  oneTest query all
+  oneTest query configuration
+  oneTest query errors
+  oneTest query help
+  oneTest query image linux1
+  oneTest query level
+  oneTest query network
+  oneTest query paging
+  oneTest query partitions
+  oneTest query performance
+  oneTest query shared
+  oneTest query volumes
+
+  # errors
+  # oneTest fubar                            # invalid command
+  # oneTest query fubar                      # invalid argument
+ }                                         # allTests()
+
+# main
+outFile="/tmp/testvif.txt"                 # output file
+successes=0                                # good tests
+tests=0                                    # total tests
+
+allTests > $outFile 2>&1                   # run all tests and capture output
+echo 
+echo "$successes of $tests tests were successful in $SECONDS seconds"
+echo "output is in $outFile"
+echo
