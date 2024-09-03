@@ -114,7 +114,7 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
 
   - For RHEL-based:
     ```
-    sudo dnf install bzip2-devel cifs-utils curl gcc git libffi-devel make mariadb-connector-c-devel mlocate net-tools openssl-devel pandoc python3 python3-devel python3-pip vim wget zlib-devel
+    sudo dnf install bzip2-devel cifs-utils curl gcc git libffi-devel make mlocate net-tools openssl-devel python3 python3-devel python3-pip vim wget zlib-devel
     ```
 
 - Install Apache.
@@ -302,10 +302,10 @@ You should see the text ``(venv)`` prefixed on the command prompt.
 /srv/venv/bin/python3 -m pip install --upgrade pip
 ```
 
-- Install Mariadb, the Python connector and the tabulate package:
+- Install Mariadb and the Python connector: 
 
 ```
-python3 -m pip install mariadb mysql-connector-python tabulate
+python3 -m pip install mariadb mysql-connector-python
 ```
 
 - Issue the following command and answer the many security questions:
