@@ -146,26 +146,37 @@ class Vif:
     print("      service: install the latest VIF service (git pull?)")
     print("     shutdown: SHUTDOWN z/VM")
     print("       verify: performs consistency checks of vif")
-    print("       volume: add paging or image disk space")
+    print("       volume: add paging or image disk space TODO: add args if needed")
 
   def handle_help_image(self):
-    print("vif image    : command that manages copies of Linux that can be created, modified and deleted")
+    print("vif image    : manage instances of Linux")
     print("  Subcommands:")
     print("       create: define a new Linux image")
+    print("               Syntax: vif image create <image>")
     print("       delete: delete an existing Linux image")
+    print("               Syntax: vif image delete <image>")
     print("      network: manage network connections for a Linux image")
+    print("               Syntax: vif image network <image> add|delete <device>")
     print("          set: change memory size or number of CPUs of a Linux image")
+    print("               Syntax: vif image set <image> (storage <size>)|cpus <num>)")
     print("        start: boot a Linux image")
-    print("         stop: halt/shutdown a Linux image")
-    print("      stopall: halt/shutdown all Linux images on LPAR")
+    print("               Syntax: vif image start <image>")
+    print("         stop: shutdown a Linux image")
+    print("               Syntax: vif image stop <image>")
+    print("      stopall: shutdown all Linux images on LPAR")
+    print("               Syntax: vif image stopall")
 
   def handle_help_partition(self):
     print("vif partition: manage disk partitions")
     print("  Subcommands:")
     print("         copy: copy source partition to newly added target partition")
+    print("               Syntax: vif partition copy <image1> <device1> [to] <image2> <device2>")
     print("       create: add a new partition")
+    print("               Syntax: vif partition create <image> <device> <size>")
     print("       delete: delete an existing partition")
+    print("               Syntax: vif partition delete <image1> <device1>")
     print("        share: give read-only access to the partition of another Linux image")
+    print("               Syntax: vif partition share <image1> <device1> [with] <image2> <device2>")
    
   def handle_help_query(self):
     print("vif query    : display many types of z/VM information")
@@ -175,6 +186,7 @@ class Vif:
     print("configuration: display current vif settings")
     print("       errors: report on hardware errors")
     print("        image: display configuration of a Linux image")
+    print("               Syntax: vif query <image>")
     print("        level: report the vif level (version)")
     print("      network: display network configuration")
     print("       paging: report on amount of page space and how much is being used")
@@ -184,10 +196,10 @@ class Vif:
     print("      volumes: display image and paging DASD volumes")
 
   def handle_help(self):
-    print("  vif ommands:")
+    print(" vif commands:")
     print("         help: give help")
     print("   hypervisor: manage z/VM")
-    print("        image: manage copies of Linux that can be created, modified and deleted")
+    print("        image: manage instances of Linux")
     print("    partition: manage disk partitions")
     print("        query: display many types of z/VM information")
 
@@ -385,7 +397,7 @@ class Vif:
     words = p[1].split()
     print(f"words[0]: {words[0]} ")
     if words[0] == "image":                # arg is image name
-      print(f"query image: words[1]: {words[1]} ")
+      print(f"query image: words[1]: {words[1]}")
       self.handle_query_image(words[1])
 
   def p_query_action(self, p):
