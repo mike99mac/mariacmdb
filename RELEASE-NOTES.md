@@ -3,6 +3,11 @@ Following are the release notes of this ``mariacmdb`` repository.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 24.09.??
+- Changed name of ``mariacmdb.py`` to ``mariacmdb``
+- Added script ``vif`` - a reanimation of the IBM product from 2000 
+-
+
 ### Version 24.08.21
 - Added inline editing of 3 metadata columns in ``finder.py``
 - Added an **Update all servers** button in finder

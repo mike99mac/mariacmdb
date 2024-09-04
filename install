@@ -34,8 +34,10 @@ mariacmdbDir="$HOME/mariacmdb"             # must be cloned to home directory
 CGIdir="/srv/www/mariacmdb"                # must exist
 checkRepoDir                               # check the repo is in the home directory
 checkCGIdir                                # check for /srv/www/mariacmdb
-echo "Copying two scripts to /usr/local/sbin ..."
-runCommand sudo cp $mariacmdbDir/usr/local/sbin/mariacmdb.py /usr/local/sbin
+echo "Copying scripts to /usr/local/sbin ..."
+runCommand sudo cp $mariacmdbDir/usr/local/sbin/mariacmdb /usr/local/sbin
+runCommand sudo cp $mariacmdbDir/usr/local/sbin/vif /usr/local/sbin
+runCommand sudo cp $mariacmdbDir/usr/local/sbin/testvif /usr/local/sbin
 runCommand sudo cp $mariacmdbDir/usr/local/sbin/testrestapi /usr/local/sbin
 echo
 echo "Copying thin client script to home directory ..."

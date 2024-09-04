@@ -19,36 +19,14 @@ There are five main source files:
 | File | Language | Description |
 | ---- | -------- | ----------- |
 | ``bootstable.js`` | Javascript | Code for inline editing of metadata |
-| ``mariacmdb.py``  | Python | Line command that maintains the database |
+| ``mariacmdb``  | Python | Line command that maintains the database |
 | ``restapi.py``  | Python | RESTful API interfaced through Apache |
 | ``finder.py``  | Python | GUI search script with a browser interface |
 | ``serverinfo``  | Bash | Return data from managed servers |
 
-Following are the number of lines in the main source files:
-```
- Python:
-  148 /srv/www/mariacmdb/finder.py
-  300 /srv/www/mariacmdb/restapi.py
-  443 /usr/local/sbin/mariacmdb.py
-  891 total
-
- Javascript:
-  158 /srv/www/mariacmdb/bootstable.js
-
- Bash:
-   48 /usr/local/sbin/serverinfo
-   27 /usr/local/sbin/testrestapi
-   75 total
-
- CSS:
-   29 /srv/www/mariacmdb/finder.css
- ----
- 1153 total
-```
-
 ## Set up SSH access
 Key-based authentication, or *Passwordless* SSH access is needed for one user from the mariacmdb server to all systems that will be managed.
-``mariacmdb.py`` commands must be run by that user and they must have ``sudo`` access.
+``mariacmdb`` commands must be run by that user and they must have ``sudo`` access.
 
 Following is an example of a script that SSH's to each managed server and runs the ``hostname`` command:
 
@@ -214,7 +192,8 @@ To install Python 3.11, perform the following steps.
 - Install Python 3.11
 
 ```
-sudo dnf install python3.11
+sudo dnf install python3.11 python3.11-devel
+
 ```
 
 - Show the new version:
@@ -297,6 +276,7 @@ You should see the text ``(venv)`` prefixed on the command prompt.
 ```
 
 - Install Mariadb and the Python connector:
+
 
 ```
 python3 -m pip install mariadb mysql-connector-python
@@ -449,11 +429,11 @@ WantedBy=multi-user.target
   - For RHEL-based:
 
     ```
-    sudo systemctl enable apache2
+    sudo systemctl enable httpd
     ```
 
     ```
-    sudo systemctl start apache2
+    sudo systemctl start httpd
     ```
 
 ## Create a configuration file
@@ -488,8 +468,8 @@ sudo vi /etc/mariacmdb.conf
 # Using mariacmdb
 The following sections describe the line command, the Web interface and the RESTful API.
 
-## The mariacmdb.py line command
-The ``mariacmdb.py`` line command must include one *subcommand*: 
+## The mariacmdb line command
+The ``mariacmdb`` line command must include one *subcommand*: 
 
 - ``add       `` Add a server to be managed - if it already exists, it will be updated.  
 - ``describe  `` Show the metadata of the ``servers`` table.
@@ -498,11 +478,11 @@ The ``mariacmdb.py`` line command must include one *subcommand*:
 - ``remove    `` Remove a managed server.
 - ``update    `` Update all rows in table.
 
-Following is the help output for ``mariacmdb.py``:
+Following is the help output for ``mariacmdb``:
 
 ```
-mariacmdb.py -h
-usage: mariacmdb.py [-h] [-v] [-C] [-c COLUMN] [-p PATTERN] [-s SERVER] subcommand
+mariacmdb -h
+usage: mariacmdb [-h] [-v] [-C] [-c COLUMN] [-p PATTERN] [-s SERVER] subcommand
 
 mariacmdb - A simple Configuration Management Database
 
@@ -529,7 +509,7 @@ To create and populate a new database, perform the following steps:
 - Create a database with the ``init`` subcommand.  This should create a database and a table in mariacmdb.
 
 ``` 
-$ mariacmdb.py init
+$ mariacmdb init
 ```
 
 - Check that the database was created. Use the ``desc`` subcommand to list the attributes of the ``servers`` table: 
@@ -560,23 +540,23 @@ owner,varchar(50),YES,,None,
 The mariacmdb server must be able to **``ssh``** to all servers using key-based authentication.  Following is an example of adding four severs to be managed:
  
 ```
-mariacmdb.py add --server model800
+mariacmdb add --server model800
 Added or updated server model800
 
-mariacmdb.py add --server model1000
+mariacmdb add --server model1000
 Added or updated server model1000
 
-mariacmdb.py add --server model1500
+mariacmdb add --server model1500
 Added or updated server model1500
 
-mariacmdb.py add --server model2000
+mariacmdb add --server model2000
 Added or updated server model12000
 ```
 
 - Use the ``query`` subcommand to show all rows in the table:
 
 ```
-mariacmdb.py query 
+mariacmdb query 
 model1000,192.168.1.229,4,4,aarch64,arm,Linux,AlmaLinux 9.4,#1 SMP Mon Jun 24 08:28:31 EDT 2024,6.6.31-20240529.v8.2.el9,4,24-08-21 06:58:42,2024-06-25,bkupgit,boomboxes,Mike Mac
 model1500,192.168.1.147,4,4,aarch64,arm,Linux,Ubuntu 22.04,#63-Ubuntu SMP Wed Jul 17 11:18:43 UTC 2024,5.15.0-1060-raspi,51,24-08-21 06:58:43,2023-08-07,mariacmdb,boomboxes,Mike Mac
 model2000,192.168.1.103,4,8,aarch64,arm,Linux,Debian GNU/Linux 12,#1 SMP Debian 1:6.6.31-1+rpt1 (2024-05-29),6.6.31+rpt-rpi-2712,14,24-08-21 06:58:43,2024-03-15,Minimy,boomboxes,Mike                 Mac
@@ -586,7 +566,7 @@ model800,192.168.1.35,4,4,aarch64,arm,Linux,Debian GNU/Linux 12,#1 SMP Debian 1:
 - Use the ``update`` subcommand to update all rows in the ``servers`` table.  There must be the ability to use key-based authentication to ``ssh`` to all managed servers. 
 
 ```
-mariacmdb.py update 
+mariacmdb update 
 __main__    : INFO     replace_row(): replaced row for server model1000
 __main__    : INFO     replace_row(): replaced row for server model1500
 __main__    : INFO     replace_row(): replaced row for server model2000

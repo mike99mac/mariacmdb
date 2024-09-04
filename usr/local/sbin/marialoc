@@ -2,9 +2,9 @@
 #
 # marialoc - count the lines of code in the main mariacmdb source files 
 #
-python="/srv/www/mariacmdb/finder.py /srv/www/mariacmdb/restapi.py /usr/local/sbin/mariacmdb.py"
+python="/srv/www/mariacmdb/finder.py /srv/www/mariacmdb/restapi.py /usr/local/sbin/mariacmdb /usr/local/sbin/vif"
 javascript="/srv/www/mariacmdb/bootstable.js"
-bash="/usr/local/sbin/serverinfo /usr/local/sbin/testrestapi"
+bash="$HOME/serverinfo /usr/local/sbin/testrestapi /usr/local/sbin/testvif"
 css="/srv/www/mariacmdb/finder.css" 
  
 echo
