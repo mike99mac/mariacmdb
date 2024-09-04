@@ -166,12 +166,12 @@ sudo mkdir /var/log/mariacmdb
  
   - For Debian based:
     ```
-    sudo chgrp apache /var/log/mariacmdb
+    sudo chgrp www-data /var/log/mariacmdb
     ```
 
   - For RHEL based:
     ```
-    sudo chgrp www-data /var/log/mariacmdb
+    sudo chgrp apache /var/log/mariacmdb
     ```
 
 - Set the group write bit of the new directory:
@@ -205,12 +205,6 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
 exit
 ```
 
-- Change to the ``/srv`` directory:
-
-```
-cd /srv
-```
-
 ## Upgrade Python
 
 This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match/case`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.  
@@ -223,10 +217,27 @@ To install Python 3.11, perform the following steps.
 sudo dnf install python3.11
 ```
 
-- Show the new version:
+- Update the ``python3`` command to point to the new version.  Check that ``python3`` is a symbolic link:
 
 ```
-python3.11 -V
+$ which python3
+/usr/bin/python3
+$ ls -l /usr/bin/python3
+lrwxrwxrwx. 1 root root 9 Sep  3 07:42 /usr/bin/python3 -> python3.9
+```
+
+- Remove the symlink and have the new ``python3.11`` point to ``python3``.
+
+```
+$ cd /usr/bin
+$ sudo rm python3;
+$ sudo ln -s python3.11 python3
+```
+
+- Verify the update version:
+
+```
+$ python3 -V
 Python 3.11.7
 ```
 
@@ -240,17 +251,10 @@ cd /srv
 ```
 
 - Create a virtual environment in one of two ways: 
-  - where the base Python version is 3.10 or greater: 
 
-    ```
-    sudo python3 -m venv venv
-    ```
-
-  - Where another Python version was added: 
-
-    ```
-    sudo python3.11 -m venv venv
-    ```
+```
+sudo python3 -m venv venv
+```
 
 - Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv/``.
 
