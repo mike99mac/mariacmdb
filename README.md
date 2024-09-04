@@ -156,28 +156,28 @@ uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
     sudo dnf install mariadb-server
     ```
 
-- Create a directory for mariadb to log to:
+- Create a directory for mariacmdb to log to:
 
 ```
-sudo mkdir /var/log/mariadb
+sudo mkdir /var/log/mariacmdb
 ```
 
 - Change the group of that directory to the group that Apache runs as.
  
   - For Debian based:
     ```
-    sudo chgrp apache /var/log/mariadb
+    sudo chgrp apache /var/log/mariacmdb
     ```
 
   - For RHEL based:
     ```
-    sudo chgrp www-data /var/log/mariadb
+    sudo chgrp www-data /var/log/mariacmdb
     ```
 
 - Set the group write bit of the new directory:
 
 ```
-sudo chmod g+w /var/log/mariadb
+sudo chmod g+w /var/log/mariacmdb
 ```
 
 - Set mariadb to start at boot time:
