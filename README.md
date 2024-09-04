@@ -207,7 +207,7 @@ exit
 
 ## Upgrade Python
 
-This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match/case`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.  
+This step is optional.  Python must be at level 3.10 or greater because mariacmdb code uses ``match/case`` statements. AlmaLinux 9.4 ships with a base Python version of 3.9.
 
 To install Python 3.11, perform the following steps.
 
@@ -217,44 +217,34 @@ To install Python 3.11, perform the following steps.
 sudo dnf install python3.11
 ```
 
-- Update the ``python3`` command to point to the new version.  Check that ``python3`` is a symbolic link:
+- Show the new version:
 
 ```
-$ which python3
-/usr/bin/python3
-$ ls -l /usr/bin/python3
-lrwxrwxrwx. 1 root root 9 Sep  3 07:42 /usr/bin/python3 -> python3.9
-```
-
-- Remove the symlink and have the new ``python3.11`` point to ``python3``.
-
-```
-$ cd /usr/bin
-$ sudo rm python3;
-$ sudo ln -s python3.11 python3
-```
-
-- Verify the update version:
-
-```
-$ python3 -V
+python3.11 -V
 Python 3.11.7
 ```
 
 ## Create a virtual environment
-Now that the co-requisites are satisfied, the virtual environment can be created with the following steps: 
+Now that the co-requisites are satisfied, the virtual environment can be created with the following steps:
 
-- Change to the ``/srv/`` directory: 
+- Change to the ``/srv/`` directory:
 
 ```
 cd /srv
 ```
 
-- Create a virtual environment in one of two ways: 
+- Create a virtual environment in one of two ways:
+  - where the base Python version is 3.10 or greater:
 
-```
-sudo python3 -m venv venv
-```
+    ```
+    sudo python3 -m venv venv
+    ```
+
+  - Where another Python version was added:
+
+    ```
+    sudo python3.11 -m venv venv
+    ```
 
 - Change the group to that which will be running Apache, and add group write permission to ``/`` and ``/srv/``.
 
@@ -295,7 +285,7 @@ sudo chmod -R g+w venv
 - Activate the environment which the current user will now be able to write to with group privileges:
 
 ```
-. venv/bin/activate  
+. venv/bin/activate
 ```
 
 You should see the text ``(venv)`` prefixed on the command prompt.
@@ -306,7 +296,7 @@ You should see the text ``(venv)`` prefixed on the command prompt.
 /srv/venv/bin/python3 -m pip install --upgrade pip
 ```
 
-- Install Mariadb and the Python connector: 
+- Install Mariadb and the Python connector:
 
 ```
 python3 -m pip install mariadb mysql-connector-python
@@ -404,7 +394,6 @@ AddHandler cgi-script .py
 Alias /mariacmdb /srv/www/mariacmdb
 <Directory /srv/www/mariacmdb>
   Options +ExecCGI
-# DirectoryIndex restapi.py
   Require all granted
 </Directory>
 
