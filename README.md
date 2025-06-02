@@ -212,6 +212,14 @@ python3.11 -V
 Python 3.11.7
 ```
 
+## Adding log file
+Modifying the permissions of log file
+```
+sudo touch /home/user/restapi.log // only if doesnt exists
+sudo chown www-data:www-data /home/user/restapi.log
+sudo chmod 664 /home/user/restapi.log
+```
+
 ## Create a virtual environment
 Now that the co-requisites are satisfied, the virtual environment can be created with the following steps:
 
@@ -466,7 +474,7 @@ sudo vi /etc/mariacmdb.conf
   "DBhost": "127.0.0.1",
   "DBname": "cmdb",
   "homeDir": "/home/pi",
-  "logLevel": "debug"
+  "logLevel": "DEBUG"
 }
 ```
 - The first four variables are the database user, password, host name or IP address, and the database name which will store the table ``servers``.
