@@ -58,14 +58,23 @@ This code has been installed on Debian and RHEL bases Linuxes.  When there are d
 
 To install mariacmdb, perform the following steps.
 
-- Login as a non-root user with sudo privileges. Add the group which will be running apache to that user.  
+- Login as a non-root user with sudo privileges. Add the group which will be running apache to that user.
 
-```
-sudo usermod -aG apache mikemac
-su - mikemac
-id
-uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
-```
+  - For Debain-based
+  ```
+  sudo usermod -aG www-data $USER
+  su - $USER
+  id
+  Output - uid=1000(user) gid=1000(user) groups=1000(user),33(www-data)
+  ```
+
+  - For RHEL-based
+  ```
+  sudo usermod -aG apache $USER
+  su - $USER
+  id
+  Output - uid=1000(user) gid=1000(user) groups=1000(user),48(apache)
+  ```
 
 - Update your system.
 
