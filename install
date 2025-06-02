@@ -25,15 +25,31 @@ function checkRepoDir
 function checkCGIdir
  {
   if [ ! -d $CGIdir ]; then
-    runCommand sudo mkdir -p /srv/www/mariacmdb
+    runCommand sudo mkdir -p $CGIdir
   fi
- }                                         # checkDir()
+ }                                         # checkCGIdir()
+
+function checkSbinDir
+ {
+  sbinDir="/usr/local/sbin"
   
+  if [ -f "$sbinDir" ]; then
+    echo "WARNING: $sbinDir exists as a file, removing it..."
+    runCommand sudo rm "$sbinDir"
+  fi
+  
+  if [ ! -d "$sbinDir" ]; then
+    echo "Creating directory $sbinDir ..."
+    runCommand sudo mkdir -p "$sbinDir"
+  fi
+ }    
+
 # main()
 mariacmdbDir="$HOME/mariacmdb"             # must be cloned to home directory
 CGIdir="/srv/www/mariacmdb"                # must exist
 checkRepoDir                               # check the repo is in the home directory
 checkCGIdir                                # check for /srv/www/mariacmdb
+checkSbinDir                               # check for /usr/local/sbin
 echo "Copying scripts to /usr/local/sbin ..."
 runCommand sudo cp $mariacmdbDir/usr/local/sbin/mariacmdb /usr/local/sbin
 runCommand sudo cp $mariacmdbDir/usr/local/sbin/vif /usr/local/sbin
@@ -46,3 +62,5 @@ echo
 echo "Copying cgi files to /srv/www/mariacmdb ..."
 runCommand sudo cp $mariacmdbDir/srv/www/mariacmdb/* /srv/www/mariacmdb
 echo
+
+echo "Installation completed successfully!"
