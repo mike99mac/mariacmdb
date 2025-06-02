@@ -1,4 +1,4 @@
-#!/usr/bin/python3.11
+#!/srv/venv/bin/python3
 """
 mariacmdb is a simple Configuration Management Database (CMDB) based on the mariadb relational database.
 It consists of a database named 'cmdb' with a table named 'servers' with these columns:
@@ -144,12 +144,12 @@ class Mariacmdb:
       self.log.error("load_config_file(): could not open configuration file /etc/mariacmdb.conf - using defaults")
       return
     confJSON = json.loads(conf_file.read())
-    self.db_user = confJSON['db_user']
-    self.db_pw = confJSON['db_pw']
-    self.db_host = confJSON['db_host']
-    self.db_name = confJSON['db_name']
-    self.log_level = confJSON['log_level'].upper()
-    self.script_dir = confJSON['home_dir']
+    self.db_user = confJSON['DBuser']
+    self.db_pw = confJSON['DBpw']
+    self.db_host = confJSON['DBhost']
+    self.db_name = confJSON['DBname']
+    self.log_level = confJSON['logLevel'].upper()
+    self.script_dir = confJSON['homeDir']
 
   def connect_to_cmdb(self):   
     """

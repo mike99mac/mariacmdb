@@ -58,14 +58,23 @@ This code has been installed on Debian and RHEL bases Linuxes.  When there are d
 
 To install mariacmdb, perform the following steps.
 
-- Login as a non-root user with sudo privileges. Add the group which will be running apache to that user.  
+- Login as a non-root user with sudo privileges. Add the group which will be running apache to that user.
 
-```
-sudo usermod -aG apache mikemac
-su - mikemac
-id
-uid=1000(mikemac) gid=1000(mikemac) groups=1000(mikemac),48(apache)
-```
+  - For Debain-based
+  ```
+  sudo usermod -aG www-data $USER
+  su - $USER
+  id
+  Output - uid=1000(user) gid=1000(user) groups=1000(user),33(www-data)
+  ```
+
+  - For RHEL-based
+  ```
+  sudo usermod -aG apache $USER
+  su - $USER
+  id
+  Output - uid=1000(user) gid=1000(user) groups=1000(user),48(apache)
+  ```
 
 - Update your system.
 
@@ -201,6 +210,14 @@ sudo dnf install python3.11 python3.11-devel
 ```
 python3.11 -V
 Python 3.11.7
+```
+
+## Adding log file
+Modifying the permissions of log file
+```
+sudo touch /home/user/restapi.log // only if doesnt exists
+sudo chown www-data:www-data /home/user/restapi.log
+sudo chmod 664 /home/user/restapi.log
 ```
 
 ## Create a virtual environment
@@ -457,7 +474,7 @@ sudo vi /etc/mariacmdb.conf
   "DBhost": "127.0.0.1",
   "DBname": "cmdb",
   "homeDir": "/home/pi",
-  "logLevel": "debug"
+  "logLevel": "DEBUG"
 }
 ```
 - The first four variables are the database user, password, host name or IP address, and the database name which will store the table ``servers``.
